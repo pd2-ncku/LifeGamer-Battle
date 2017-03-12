@@ -30,6 +30,7 @@ Battle::Battle(QObject *parent) : QObject(parent),
     //serverConnection->connectToHost("localhost", 3001);
 
     connect(synchrogazer, SIGNAL(timeout()), this, SLOT(clk()));
+    connect(this, SIGNAL(decideWinLose(int SN)), this, SLOT(gameFinished(int SN)));
     synchrogazer->start(100);
 }
 
@@ -67,6 +68,12 @@ void Battle::startBattle()
         if(all[i] != 0) {
             todraw[cnt++] = all[i];
         }
+    }
+    for(int i = 0;i < 4;i++) {
+        cout << deck[i] << ' ';
+    }
+    for(int i = 0;i < 4;i++) {
+        cout << todraw[i] << ' ';
     }
     cout << "Deck registration success." << endl;
     comp1_command.clear();
@@ -133,25 +140,25 @@ void Battle::initMap()
 
 void Battle::initTower(int SN)
 {
-    int x, y, size, group, target, p_x, p_y; /* p_x p_y is for attack detection */
+    int x, y, size, group, target, p_x, p_y, atk, hp; /* p_x p_y is for attack detection */
     switch(SN) { /* 123:group1, 456:group2, 2 and 5 are large tower */
     case 1:
-        x = 3;y = 7;size = 4;group = 1;p_x = 6;p_y = 10;
+        x = 3;y = 7;size = 4;group = 1;p_x = 6;p_y = 10;hp = 4000;atk = 4;
         break;
     case 2:
-        x = 8;y = 3;size = 6;group = 1;p_x = 10;p_y = 8;
+        x = 8;y = 3;size = 6;group = 1;p_x = 10;p_y = 8;hp = 5000;atk = 5;
         break;
     case 3:
-        x = 15;y = 7;size = 4;group = 1;p_x = 15;p_y = 10;
+        x = 15;y = 7;size = 4;group = 1;p_x = 15;p_y = 10;hp = 4000;atk = 4;
         break;
     case 4:
-        x = 3;y = 41;size = 4;group = 2;p_x = 6;p_y = 41;
+        x = 3;y = 41;size = 4;group = 2;p_x = 6;p_y = 41;hp = 4000;atk = 4;
         break;
     case 5:
-        x = 8;y = 43;size = 6;group = 2;p_x = 11;p_y = 43;
+        x = 8;y = 43;size = 6;group = 2;p_x = 11;p_y = 43;hp = 5000;atk = 5;
         break;
     case 6:
-        x = 15;y = 41;size = 4;group = 2;p_x = 15;p_y = 41;
+        x = 15;y = 41;size = 4;group = 2;p_x = 15;p_y = 41;hp = 4000;atk = 4;
         break;
     }
     if(group == 1) target = 2;
@@ -165,11 +172,10 @@ void Battle::initTower(int SN)
     }
 
     Tower *newTower;
-    newTower = new Tower(1000, 100, 10, group, target, this, this);
+    newTower = new Tower(hp, atk, 5, group, target, this, this);
     newTower->setPoint(p_x, p_y);
     newTower->SN = SN;
     UnitList.append(static_cast<Unit*>(newTower));
-
 }
 
 void Battle::destroyTower(int SN)
@@ -201,6 +207,9 @@ void Battle::destroyTower(int SN)
             map[x+i][y+j] = ' ';
             map_hp[x+i][y+j] = ' ';
         }
+    }
+    if(SN == 2 || SN == 5) {
+        emit decideWinLose(SN);
     }
 }
 
@@ -262,33 +271,37 @@ int Battle::addMinion(int num, int x, int y)
         cout << "summon minion " << num << " at " << x << " " << y << " failed: map occupied." << endl;
         return SummonFailedOccupied;
     }
+    else if(y > 24) {
+        cout << "summon minion " << num << " at " << x << " " << y << " failed: out of range." << endl;
+        return SummonFailedOutOfRange;
+    }
     else {
         Minion *newMinion;
         switch(num) {
         case 1:
-            newMinion = new Minion(1500, 5, 0.3f, 5, 3, 1, 2, this, this);
+            newMinion = new Minion('1', 1500, 5, 0.3f, 5, 3, 1, 2, this, this);
             break;
         case 2:
-            newMinion = new Minion(500, 4, 0.4f, 15, 3, 1, 2, this, this);
+            newMinion = new Minion('2', 500, 4, 0.4f, 15, 3, 1, 2, this, this);
             break;
         case 3:
-            newMinion = new Minion(700, 3, 0.2f, -5, 5, 1, 1, this, this);
+            newMinion = new Minion('3', 700, 3, 0.2f, -5, 5, 1, 1, this, this);
             break;
         case 4:
-            newMinion = new Minion(3500, 7, 0.2f, 1, 2, 1, 2, this, this);
+            newMinion = new Minion('4', 3500, 7, 0.2f, 1, 2, 1, 2, this, this);
             break;
         case 5:
-            newMinion = new Minion(300, 1, 0.3f, -1, 4, 1, 1, this, this);
+            newMinion = new Minion('5', 300, 1, 0.3f, -1, 4, 1, 1, this, this);
             break;
         case 6:
-            newMinion = new Minion(300, 4, 0.3f, 10, 5, 1, 2, this, this);
+            newMinion = new Minion('6', 300, 4, 0.3f, 10, 5, 1, 2, this, this);
             break;
         case 7:
-            newMinion = new Minion(1500, 5, 0.1f, 20, 2, 1, 2, this, this);
+            newMinion = new Minion('7', 1500, 5, 0.1f, 20, 2, 1, 2, this, this);
             break;
-        //case 8:
-            //newMinion = new Minion(20000, 4, 0.3f, 300, 3, 2, this, this);
-            //break;
+        case 8:
+            newMinion = new Minion('8', 1500, 5, 0.1f, 20, 2, 1, 2, this, this);
+            break;
         }
         newMinion->setPoint(x, y);
         UnitList.append(static_cast<Unit*>(newMinion));
@@ -297,6 +310,7 @@ int Battle::addMinion(int num, int x, int y)
                 int rand = qrand() % 4;
                 deck[i] = todraw[rand];
                 todraw[rand] = num;
+                mana_comp1 -= minion_cost[num - 1];
             }
         }
         cout << "summon minion " << num << " at " << x << " " << y << " success." << endl;
@@ -306,6 +320,8 @@ int Battle::addMinion(int num, int x, int y)
 
 void Battle::clk()
 {
+    if(countdown == 0)
+        emit decideWinLose(0);
     if(!started) {
         if(comp1_command.length()) {
             startBattle();
@@ -325,6 +341,8 @@ void Battle::clk()
             minion["loc_x"] = QString::number(m->fixed_y);
             minion["loc_y"] = QString::number(m->fixed_x);
             current_minion.append(minion);
+            //debug=============================
+            new_minion.append(minion);
         }
         else { /* Tower */
             Tower* t = dynamic_cast<Tower*>(*it);
@@ -395,7 +413,6 @@ void Battle::clk()
         }
         comp1_command.clear();
     }
-
     for(auto it = UnitList.begin();it != UnitList.end();++it) {
         if((*it)->getCurrentHp() <= 0) { /* remove dead units first */
             if(Tower *t = dynamic_cast<Tower*>(*it)) {
@@ -413,7 +430,6 @@ void Battle::clk()
             (*it)->active();
         }
     }
-
     /* update map_hp information */
     for(auto it = UnitList.begin();it != UnitList.end();++it) {
         if(Tower *t = dynamic_cast<Tower*>(*it)) {
@@ -426,10 +442,9 @@ void Battle::clk()
             map_hp[m->fixed_x][m->fixed_y] = "0123456789A"[index];
         }
     }
-
     QString toSend;
     QTextStream toSendst(&toSend);
-    toSendst << mana_comp1;
+    toSendst << countdown / 10 << ' ' << mana_comp1;
     for(int i = 0;i < 4;i++) {
         toSendst << ' ' << deck[i];
     }
@@ -437,13 +452,53 @@ void Battle::clk()
     comp1->write(toSend.toStdString().c_str());
     for(int i = 0;i < 22;++i) {
         comp1->write(QByteArray(map[i]).append("\n"));
+        cout << map[i] << endl;
     }
     for(int i = 0;i < 22;++i) {
         comp1->write(QByteArray(map_hp[i]).append("\n"));
+        cout << map_hp[i] << endl;
     }
 }
 
 void Battle::childStarted()
 {
     cout << "Your program has started!" << endl;
+}
+
+void Battle::gameFinished(int SN)
+{
+    synchrogazer->stop();
+    if(SN == 2) cout << "You Lose" << endl;
+    else if(SN == 5) cout << "You Win" << endl;
+    else {
+        bool tower[6];
+        int cnt1 = 0, cnt2 = 0;
+        for(int i = 0;i < 6;i++) {
+            tower[i] = false;
+        }
+        for(auto it = UnitList.begin();it != UnitList.end();++it) {
+            if(Tower *t = dynamic_cast<Tower*>(*it)) {
+                tower[t->SN - 1] = true;
+                if(t->SN <= 3) cnt1++;
+                else cnt2++;
+            }
+        }
+        if(!tower[1]) {
+            cout << "You Lose" << endl;
+        }
+        else if(!tower[4]) {
+            cout << "You Win" << endl;
+        }
+        else {
+            if(cnt1 > cnt2) {
+                cout << "You Win" << endl;
+            }
+            else if(cnt1 == cnt2) {
+                cout << "Draw" << endl;
+            }
+            else {
+                cout << "You Lose" << endl;
+            }
+        }
+    }
 }

@@ -25,7 +25,8 @@ public:
         SummonFailedOM,
         SummonFailedOccupied,
         SummonFailedUnknowMinion,
-        SummonFailedNotInDeck
+        SummonFailedNotInDeck,
+        SummonFailedOutOfRange
     };
 
     friend class Minion;
@@ -33,6 +34,7 @@ public:
 signals:
     void signalLogHp();
     void endGame();
+    void decideWinLose(int SN);
 
 public slots:
     void readChildProcess();
@@ -63,6 +65,7 @@ private:
 private slots:
     void clk(); /* Game clock */
     void childStarted();
+    void gameFinished(int SN);
 };
 
 #endif // BATTLE_H

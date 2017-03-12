@@ -5,8 +5,8 @@
 
 #include "tower.h"
 
-Minion::Minion(int hp, int cost, float walkSpeed, int atk, int attackRange, int group, int target, Battle *battle, QObject *parent)
-    : Unit(hp, cost, walkSpeed, atk, attackRange, group, target, battle, parent)
+Minion::Minion(char minion_num, int hp, int cost, float walkSpeed, int atk, int attackRange, int group, int target, Battle *battle, QObject *parent)
+    : Unit(hp, cost, walkSpeed, atk, attackRange, group, target, battle, parent), minion_num(minion_num)
 {
     connect(battle, SIGNAL(signalLogHp()), this, SLOT(setPreviousHpRatio()));
     if(group == 1) stat = StatusStopRight;
@@ -19,7 +19,7 @@ void Minion::setPoint(int x, int y)
     this->y = y + 0.5f;
     fixed_x = static_cast<int>(this->x);
     fixed_y = static_cast<int>(this->y);
-    battle->map[fixed_x][fixed_y] = 'M';
+    battle->map[fixed_x][fixed_y] = minion_num;
     battle->map_hp[fixed_x][fixed_y] = 'A';
 }
 
@@ -30,14 +30,17 @@ void Minion::active()
     /* search for target */
     for(Unit* iter : battle->UnitList) {
         if(Tower* temp = dynamic_cast<Tower*>(iter)) {
-            if(temp->group != group && (qPow(temp->x - fixed_x, 2) + qPow(temp->y - fixed_y, 2) < attackRange * attackRange)) {
+            if(atk < 0 && temp->group == group) {
+                break;
+            }
+            else if(temp->group == target && (qPow(temp->x - fixed_x, 2) + qPow(temp->y - fixed_y, 2) < attackRange * attackRange)) {
                 inMySight = true;
                 temp->onhit(atk);
                 break;
             }
         }
         else if(Minion* temp = dynamic_cast<Minion*>(iter)) {
-            if(temp->group != group && (qPow(temp->x - fixed_x, 2) + qPow(temp->y - fixed_y, 2) < attackRange * attackRange)) {
+            if(temp->group == target && (qPow(temp->x - fixed_x, 2) + qPow(temp->y - fixed_y, 2) < attackRange * attackRange)) {
                 inMySight = true;
                 temp->onhit(atk);
                 break;
@@ -45,10 +48,9 @@ void Minion::active()
         }
     }
 
-    if(inMySight) { /* attack */
-
+    if(!inMySight) { /* attack */
+        walk();
     }
-    else walk();
 }
 
 void Minion::walk()
@@ -142,7 +144,7 @@ void Minion::walk()
         }
     }
 
-    battle->map[fixed_x][fixed_y] = 'M';
+    battle->map[fixed_x][fixed_y] = minion_num;
     setWalkDirection(target_x, target_y);
 }
 
