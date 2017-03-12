@@ -5,10 +5,12 @@
 
 #include "tower.h"
 
-Minion::Minion(int hp, int cost, float walkSpeed, int atk, int attackSpeed, int attackRange, int effectRadius, int group, Battle *battle, QObject *parent)
-    : Unit(hp, cost, walkSpeed, atk, attackSpeed, attackRange, effectRadius, group, battle, parent)
+Minion::Minion(int hp, int cost, float walkSpeed, int atk, int attackRange, int group, int target, Battle *battle, QObject *parent)
+    : Unit(hp, cost, walkSpeed, atk, attackRange, group, target, battle, parent)
 {
-
+    connect(battle, SIGNAL(signalLogHp()), this, SLOT(setPreviousHpRatio()));
+    if(group == 1) stat = StatusStopRight;
+    else stat = StatusStopLeft;
 }
 
 void Minion::setPoint(int x, int y)
@@ -18,6 +20,7 @@ void Minion::setPoint(int x, int y)
     fixed_x = static_cast<int>(this->x);
     fixed_y = static_cast<int>(this->y);
     battle->map[fixed_x][fixed_y] = 'M';
+    battle->map_hp[fixed_x][fixed_y] = 'A';
 }
 
 void Minion::active()
@@ -115,13 +118,18 @@ void Minion::walk()
     }
 
     float base = qFabs(target_x - x) + qFabs(target_y - y);
+
     int temp_x = static_cast<int>(x);
     int temp_y = static_cast<int>(y);
 
-    if(fixed_x == temp_x) x += (target_x - x) * walkSpeed / base;
-    if(fixed_y == temp_y) y += (target_y - y) * walkSpeed / base;
+    float dir_x = (target_x - x) * walkSpeed / base;
+    float dir_y = (target_y - y) * walkSpeed / base;
+
+    if(fixed_x == temp_x) x += dir_x;
+    if(fixed_y == temp_y) y += dir_y;
 
     battle->map[fixed_x][fixed_y] = ' ';
+    battle->map_hp[fixed_x][fixed_y] = ' ';
 
     if(fixed_x != static_cast<int>(x)) {
         if(battle->map[temp_x][fixed_y] == ' ') {
@@ -135,4 +143,32 @@ void Minion::walk()
     }
 
     battle->map[fixed_x][fixed_y] = 'M';
+    setWalkDirection(target_x, target_y);
+}
+
+void Minion::setWalkDirection(float target_x, float target_y)
+{
+    float dx = qFabs(x - target_x);
+    float dy = qFabs(y - target_y);
+
+    if(dx > dy) { /* up/down */
+        if(target_x - x > 0)
+            stat = StatusWalkDown;
+        else
+            stat = StatusWalkTop;
+    }
+    else { /* left/right */
+        if(target_y - y > 0)
+            stat = StatusWalkRight;
+        else
+            stat = StatusWalkLeft;
+    }
+}
+
+void Minion::setAttackDirection(float target_x, float target_y)
+{
+    if(target_y - y > 0)
+        stat = StatusAttackRight;
+    else
+        stat = StatusAttackLeft;
 }

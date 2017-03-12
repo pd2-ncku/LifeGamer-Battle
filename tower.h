@@ -7,7 +7,7 @@
 class Tower : public Unit
 {
 public:
-    Tower(int hp, int atk, int attackSpeed, int attackRange, int aoeRadius, int group, Battle *battle, QObject *parent);
+    Tower(int hp, int atk, int attackRange, int group, int target, Battle *battle, QObject *parent);
 
     void setPoint(int x, int y);
     int x;

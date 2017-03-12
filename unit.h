@@ -15,20 +15,26 @@ public:
                   int cost,
                   float walkSpeed,
                   int atk,
-                  int attackSpeed,
                   int attackRange,
-                  int effectRadius,
-                  int group,
+                  int group, int target,
                   Battle *battle,
                   QObject *parent = 0);
 
     virtual ~Unit();
 
     enum status {
-        StatusWalk,
-        StatusAttack,
-        StatusIdle,
-        StatusPrepare
+        StatusWalkLeft = 0,
+        StatusWalkRight,
+        StatusWalkTop,
+        StatusWalkDown,
+        StatusWalkLT,
+        StatusWalkLD,
+        StatusWalkRT,
+        StatusWalkRD,
+        StatusAttackLeft,
+        StatusAttackRight,
+        StatusStopRight,
+        StatusStopLeft
     };
 
     int getCurrentHp();
@@ -36,6 +42,8 @@ public:
     int getMaxHp();
 
     int getHpRatio();
+
+    int getHpChange();
 
     int getCost();
 
@@ -45,11 +53,9 @@ public:
     friend class Tower;
     friend class Battle;
 
-signals:
-    void attack();
-
 public slots:
     virtual void active(); /* Game clock */
+    void setPreviousHpRatio();
 
 private:
     const int MaxHp;
@@ -58,13 +64,15 @@ private:
     float walkSpeed; /* walking speed */
     
     int atk; /* attack damage */
-    int attackSpeed; /* attack cooldown(in 0.1 sec) */
     int attackRange; /* unit detect range */
 
-    float aoeRadius; /* 0 when the unit is not AOE */
     int group; /* friend or enemy */
+    int target; /* healers use minus attack at friend */
 
     Battle *battle; /* parent battle field */
+
+    int stat;
+    int previousHpRatio;
 
 };
 

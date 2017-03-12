@@ -1,7 +1,16 @@
 ﻿#include "battle.h"
 
 #include <QDebug>
-#include <cstdio>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonValue>
+#include <QJsonDocument>
+#include <QUrlQuery>
+#include <QByteArray>
+#include <QTextStream>
+
+#include <iostream>
+using namespace std;
 
 #include "unit.h"
 #include "minion.h"
@@ -12,10 +21,13 @@ Battle::Battle(QObject *parent) : QObject(parent),
     synchrogazer(new QTimer),
     started(false),
     mana_comp1(5),
-    mana_comp2(5)
+    serverConnection(new QNetworkAccessManager),
+    comp1_command(""),
+    minion_cost{5, 4, 3, 7, 1, 4, 5, 4}
 {
     synchrogazer->setTimerType(Qt::PreciseTimer);
     initMap();
+    //serverConnection->connectToHost("localhost", 3001);
 
     connect(synchrogazer, SIGNAL(timeout()), this, SLOT(clk()));
     synchrogazer->start(100);
@@ -28,8 +40,36 @@ Battle::~Battle()
 
 void Battle::startBattle()
 {
-    setCompetitor(QString("/home/hmkrl/run"));
+    int all[8] = {1,2,3,4,5,6,7,8};
     started = true;
+    QTextStream sbstream(&comp1_command);
+    for(int i = 0;i < 4;++i) {
+        sbstream >> deck[i];
+        if(deck[i] <= 0 || deck[i] > 8) {
+            cout << "Deck registration error: no such minion." << endl;
+            comp1->terminate();
+            emit endGame();
+            return;
+        }
+        for(int j = 0;j < i;j++) {
+            if(deck[i] == deck[j]) {
+                cout << "Deck registration error: duplicated minion." << endl;
+                comp1->terminate();
+                emit endGame();
+                return;
+            }
+        }
+        all[deck[i] - 1] = 0;
+    }
+
+    int cnt = 0;
+    for(int i = 0;i < 8;i++) {
+        if(all[i] != 0) {
+            todraw[cnt++] = all[i];
+        }
+    }
+    cout << "Deck registration success." << endl;
+    comp1_command.clear();
 }
 
 void Battle::setCompetitor(QString path)
@@ -37,11 +77,13 @@ void Battle::setCompetitor(QString path)
     comp1 = new QProcess(this);
     comp1->start(path);
     connect(comp1, SIGNAL(readyReadStandardOutput()), this, SLOT(readChildProcess()));
+    connect(comp1, SIGNAL(started()), this, SLOT(childStarted()));
+    cout << "Starting your program..." << endl;
 }
 
 void Battle::readChildProcess()
 {
-    qDebug() << comp1->readAllStandardOutput();
+    comp1_command += comp1->readAllStandardOutput();
 }
 
 void Battle::initMap()
@@ -51,12 +93,14 @@ void Battle::initMap()
 
     /* Map boundary initialization */
     for(int i = 0;i < 22;++i) {
-        for(int j = 0;j < 52;++j) {
+        for(int j = 0;j < 53;++j) {
             if(!i || !j || i == 21 || j == 51) {
                 map[i][j] = '#';
+                map_hp[i][j] = '#';
             }
             else {
                 map[i][j] = ' ';
+                map_hp[i][j] = ' ';
             }
         }
     }
@@ -79,11 +123,17 @@ void Battle::initMap()
         initTower(i);
     }
 
+    /* NULL end string */
+    for(int i = 0;i < 22;++i) {
+        map[i][52] = '\0';
+        map_hp[i][52] = '\0';
+    }
+
 }
 
 void Battle::initTower(int SN)
 {
-    int x, y, size, group, p_x, p_y; /* p_x p_y is for attack detection */
+    int x, y, size, group, target, p_x, p_y; /* p_x p_y is for attack detection */
     switch(SN) { /* 123:group1, 456:group2, 2 and 5 are large tower */
     case 1:
         x = 3;y = 7;size = 4;group = 1;p_x = 6;p_y = 10;
@@ -104,18 +154,22 @@ void Battle::initTower(int SN)
         x = 15;y = 41;size = 4;group = 2;p_x = 15;p_y = 41;
         break;
     }
+    if(group == 1) target = 2;
+    else target = 1;
 
     for(int i = 0;i < size;++i) {
         for(int j = 0;j < size;++j) {
             map[x+i][y+j] = '#';
+            map_hp[x+i][y+j] = '9';
         }
     }
 
     Tower *newTower;
-    newTower = new Tower(1000, 100, 1, 10, 0, group, this, this);
+    newTower = new Tower(1000, 100, 10, group, target, this, this);
     newTower->setPoint(p_x, p_y);
     newTower->SN = SN;
     UnitList.append(static_cast<Unit*>(newTower));
+
 }
 
 void Battle::destroyTower(int SN)
@@ -145,63 +199,251 @@ void Battle::destroyTower(int SN)
     for(int i = 0;i < size;++i) {
         for(int j = 0;j < size;++j) {
             map[x+i][y+j] = ' ';
+            map_hp[x+i][y+j] = ' ';
         }
     }
 }
 
-int Battle::addMinion()
+void Battle::modifyTowerHp(int SN, int hpRatio)
 {
-    Minion *newMinion = new Minion(10000, 4, 0.7f, 300, 1, 3, 0, 2, this, this);
-    newMinion->setPoint(20, 40);
-    UnitList.append(static_cast<Unit*>(newMinion));
+    int x, y, size;
+    switch(SN) { /* 123:group1, 456:group2, 2 and 5 are large tower */
+    case 1:
+        x = 3;y = 7;size = 4;
+        break;
+    case 2:
+        x = 8;y = 3;size = 6;
+        break;
+    case 3:
+        x = 15;y = 7;size = 4;
+        break;
+    case 4:
+        x = 3;y = 41;size = 4;
+        break;
+    case 5:
+        x = 8;y = 43;size = 6;
+        break;
+    case 6:
+        x = 15;y = 41;size = 4;
+        break;
+    }
+    int index = hpRatio/10;
+    if(index < 0) index = 0;
 
-    //newMinion = new Minion(1000, 4, 4.0f, 300, 1, 5, 0, 1, this, this);
-    //newMinion->setPoint(15, 5);
-    //UnitList.append(static_cast<Unit*>(newMinion));
+    for(int i = 0;i < size;++i) {
+        for(int j = 0;j < size;++j) {
+            map_hp[x+i][y+j] = "0123456789A"[index];
+        }
+    }
+}
 
+int Battle::addMinion(int num, int x, int y)
+{
+    bool inDeck = false;
+    for(int i = 0;i < 4;i++) {
+        if(deck[i] == num) {
+            inDeck = true;
+            break;
+        }
+    }
+    if(!inDeck) {
+        cout << "summon minion " << num << " at " << x << " " << y << " failed: minion not in deck." << endl;
+        return SummonFailedNotInDeck;
+    }
+    else if(num < 1 || num > 8) {
+        cout << "summon minion " << num << " at " << x << " " << y << " failed: no such minion." << endl;
+        return SummonFailedUnknowMinion;
+    }
+    else if(mana_comp1 < minion_cost[num - 1]) {
+        cout << "summon minion " << num << " at " << x << " " << y << " failed: no enough mana." << endl;
+        return SummonFailedOM;
+    }
+    else if(map[x][y] != ' ') {
+        cout << "summon minion " << num << " at " << x << " " << y << " failed: map occupied." << endl;
+        return SummonFailedOccupied;
+    }
+    else {
+        Minion *newMinion;
+        switch(num) {
+        case 1:
+            newMinion = new Minion(1500, 5, 0.3f, 5, 3, 1, 2, this, this);
+            break;
+        case 2:
+            newMinion = new Minion(500, 4, 0.4f, 15, 3, 1, 2, this, this);
+            break;
+        case 3:
+            newMinion = new Minion(700, 3, 0.2f, -5, 5, 1, 1, this, this);
+            break;
+        case 4:
+            newMinion = new Minion(3500, 7, 0.2f, 1, 2, 1, 2, this, this);
+            break;
+        case 5:
+            newMinion = new Minion(300, 1, 0.3f, -1, 4, 1, 1, this, this);
+            break;
+        case 6:
+            newMinion = new Minion(300, 4, 0.3f, 10, 5, 1, 2, this, this);
+            break;
+        case 7:
+            newMinion = new Minion(1500, 5, 0.1f, 20, 2, 1, 2, this, this);
+            break;
+        //case 8:
+            //newMinion = new Minion(20000, 4, 0.3f, 300, 3, 2, this, this);
+            //break;
+        }
+        newMinion->setPoint(x, y);
+        UnitList.append(static_cast<Unit*>(newMinion));
+        for(int i = 0;i < 4;i++) {
+            if(deck[i] == num) {
+                int rand = qrand() % 4;
+                deck[i] = todraw[rand];
+                todraw[rand] = num;
+            }
+        }
+        cout << "summon minion " << num << " at " << x << " " << y << " success." << endl;
+        return SummonSuccess;
+    }
 }
 
 void Battle::clk()
 {
-    if(started) { /* both ready, battle started */
-        countdown -= 1;
-
-        /* Mana regeneration */
-        if(!(countdown % 10)) {
-            int regen = countdown < 600 ? 2 : 1;
-            if(mana_comp1 < 10) mana_comp1 += regen;
-            if(mana_comp2 < 10) mana_comp2 += regen;
+    if(!started) {
+        if(comp1_command.length()) {
+            startBattle();
         }
+        return;
+    }
+    QJsonObject cmd, minion, tower;
+    QJsonArray current_minion, new_minion, buildings;
 
-        //============ FOR DEBUG ==============
-        if(countdown == 1770) {
-            addMinion();
+    for(auto it = UnitList.begin();it != UnitList.end();++it) {
+        if(Minion *m = dynamic_cast<Minion*>(*it)) {
+            minion["belong"] = "p" + QString::number(m->group);
+            minion["name"] = "orge1";
+            minion["type"] = "orge";
+            minion["status"] = QString::number(m->getHpChange());
+            minion["move"] = QString::number(m->stat);
+            minion["loc_x"] = QString::number(m->fixed_y);
+            minion["loc_y"] = QString::number(m->fixed_x);
+            current_minion.append(minion);
         }
+        else { /* Tower */
+            Tower* t = dynamic_cast<Tower*>(*it);
+            QString name("p");
+            name += QString::number(t->group);
+            name += "_";
+            switch(t->SN) {
+            case 1:case 4:
+                name += "TOP";
+                break;
+            case 2:case 5:
+                name += "MIDDLE";
+                break;
+            case 3: case 6:
+                name += "BOTTOM";
+                break;
+            }
 
-        for(auto it = UnitList.begin();it != UnitList.end();++it) {
-            if((*it)->getCurrentHp() <= 0) { /* remove dead units first */
-                if(Tower *t = dynamic_cast<Tower*>(*it)) {
-                    destroyTower(t->SN);
-                }
-                else {
-                    Minion *m = dynamic_cast<Minion*>(*it);
-                    map[m->fixed_x][m->fixed_y] = ' ';
-                }
+            tower["name"] = name;
+            tower["status"] = QString::number(t->getHpChange());
+            buildings.append(tower);
+        }
+    }
 
-                it = UnitList.erase(it);
+    cmd["p1"] = "kevin";
+    cmd["p2"] = "eric";
+    cmd["cmd"] = "battle";
+    cmd["current_minion"] = current_minion;
+    cmd["new_minion"] = new_minion;
+    cmd["buildings"] = buildings;
+
+    QString msg(QJsonDocument(cmd).toJson(QJsonDocument::Compact));
+
+    QUrl host("http://localhost:3001/game_cmd");
+    QUrlQuery qry;
+    qry.addQueryItem("p1", "kevin");
+    qry.addQueryItem("p2", "eric");
+    host.setQuery(qry);
+    QNetworkRequest req(host);
+
+    req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    req.setHeader(QNetworkRequest::ContentLengthHeader, msg.length());
+
+    serverConnection->post(req, QByteArray(msg.toStdString().c_str()));
+
+    /* map info send to render server finished */
+    emit signalLogHp();
+
+    countdown -= 1;
+
+    /* Mana regeneration */
+    if(!(countdown % 10)) {
+        int regen = countdown < 600 ? 2 : 1;
+        if(mana_comp1 < 10) mana_comp1 += regen;
+    }
+
+    /* summon new minion */
+    if(comp1_command.length()) {
+        int command, minion, x, y;
+        QTextStream compcmd(&comp1_command);
+        while(!compcmd.atEnd()) {
+            compcmd >> command;
+            if(command == 0) break;
+            else {
+                compcmd >> minion >> x >> y;
+                addMinion(minion, x, y);
+            }
+        }
+        comp1_command.clear();
+    }
+
+    for(auto it = UnitList.begin();it != UnitList.end();++it) {
+        if((*it)->getCurrentHp() <= 0) { /* remove dead units first */
+            if(Tower *t = dynamic_cast<Tower*>(*it)) {
+                destroyTower(t->SN);
             }
             else {
-                (*it)->active();
+                Minion *m = dynamic_cast<Minion*>(*it);
+                map[m->fixed_x][m->fixed_y] = ' ';
+                map_hp[m->fixed_x][m->fixed_y] = ' ';
             }
-        }
 
-        for(int i = 0;i < 22;++i) {
-            for(int j = 0;j < 52;++j) {
-                putchar(map[i][j]);
-            }
-            putchar('\n');
+            it = UnitList.erase(it);
         }
-        //qDebug() << "write";
-        //qDebug() << comp1->write("test\n");
+        else {
+            (*it)->active();
+        }
     }
+
+    /* update map_hp information */
+    for(auto it = UnitList.begin();it != UnitList.end();++it) {
+        if(Tower *t = dynamic_cast<Tower*>(*it)) {
+            modifyTowerHp(t->SN, t->getHpRatio());
+        }
+        else {
+            Minion *m = dynamic_cast<Minion*>(*it);
+            int index = m->getHpRatio()/10;
+            if(index < 0) index = 0;
+            map_hp[m->fixed_x][m->fixed_y] = "0123456789A"[index];
+        }
+    }
+
+    QString toSend;
+    QTextStream toSendst(&toSend);
+    toSendst << mana_comp1;
+    for(int i = 0;i < 4;i++) {
+        toSendst << ' ' << deck[i];
+    }
+    toSendst << '\n';
+    comp1->write(toSend.toStdString().c_str());
+    for(int i = 0;i < 22;++i) {
+        comp1->write(QByteArray(map[i]).append("\n"));
+    }
+    for(int i = 0;i < 22;++i) {
+        comp1->write(QByteArray(map_hp[i]).append("\n"));
+    }
+}
+
+void Battle::childStarted()
+{
+    cout << "Your program has started!" << endl;
 }

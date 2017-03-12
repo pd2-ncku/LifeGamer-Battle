@@ -2,10 +2,12 @@
 
 #include "minion.h"
 
-Tower::Tower(int hp, int atk, int attackSpeed, int attackRange, int aoeRadius, int group, Battle *battle, QObject *parent)
-    : Unit(hp, 0, 0, atk, attackSpeed, attackRange, aoeRadius, group, battle, parent)
-{
+#include <QDebug>
 
+Tower::Tower(int hp, int atk, int attackRange, int group, int target, Battle *battle, QObject *parent)
+    : Unit(hp, 0, 0, atk, attackRange, group, target, battle, parent)
+{
+    connect(battle, SIGNAL(signalLogHp()), this, SLOT(setPreviousHpRatio()));
 }
 
 void Tower::setPoint(int x, int y)
@@ -18,7 +20,7 @@ void Tower::active()
 {
     for(Unit* iter : battle->UnitList) {
         if(Minion* temp = dynamic_cast<Minion*>(iter)) {
-            if(temp->group != group) {
+            if(temp->group != group && ((temp->fixed_y <= 23 && temp->group == 2) || (temp->fixed_y >= 28 && temp->group == 1))) {
                 temp->onhit(atk);
                 break;
             }
