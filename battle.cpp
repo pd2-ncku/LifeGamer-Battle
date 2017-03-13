@@ -22,15 +22,16 @@ Battle::Battle(QObject *parent) : QObject(parent),
     started(false),
     mana_comp1(5),
     serverConnection(new QNetworkAccessManager),
+    displayMap(false),
     comp1_command(""),
-    minion_cost{5, 4, 3, 7, 1, 4, 5, 4}
+    minion_cost{5, 3, 4, 7, 1, 4, 9, 5}
 {
     synchrogazer->setTimerType(Qt::PreciseTimer);
     initMap();
     //serverConnection->connectToHost("localhost", 3001);
 
     connect(synchrogazer, SIGNAL(timeout()), this, SLOT(clk()));
-    connect(this, SIGNAL(decideWinLose(int SN)), this, SLOT(gameFinished(int SN)));
+    connect(this, SIGNAL(decideWinLose(int)), this, SLOT(gameFinished(int)));
     synchrogazer->start(100);
 }
 
@@ -41,39 +42,30 @@ Battle::~Battle()
 
 void Battle::startBattle()
 {
-    int all[8] = {1,2,3,4,5,6,7,8};
+    int buf[8];
     started = true;
     QTextStream sbstream(&comp1_command);
-    for(int i = 0;i < 4;++i) {
-        sbstream >> deck[i];
-        if(deck[i] <= 0 || deck[i] > 8) {
+    for(int i = 0;i < 8;++i) {
+        sbstream >> buf[i];
+        if(buf[i] <= 0 || buf[i] > 8) {
             cout << "Deck registration error: no such minion." << endl;
             comp1->terminate();
             emit endGame();
             return;
         }
         for(int j = 0;j < i;j++) {
-            if(deck[i] == deck[j]) {
+            if(buf[i] == buf[j]) {
                 cout << "Deck registration error: duplicated minion." << endl;
                 comp1->terminate();
                 emit endGame();
                 return;
             }
         }
-        all[deck[i] - 1] = 0;
     }
 
-    int cnt = 0;
-    for(int i = 0;i < 8;i++) {
-        if(all[i] != 0) {
-            todraw[cnt++] = all[i];
-        }
-    }
     for(int i = 0;i < 4;i++) {
-        cout << deck[i] << ' ';
-    }
-    for(int i = 0;i < 4;i++) {
-        cout << todraw[i] << ' ';
+        deck[i] = buf[i];
+        todraw[i] = buf[i + 4];
     }
     cout << "Deck registration success." << endl;
     comp1_command.clear();
@@ -86,6 +78,11 @@ void Battle::setCompetitor(QString path)
     connect(comp1, SIGNAL(readyReadStandardOutput()), this, SLOT(readChildProcess()));
     connect(comp1, SIGNAL(started()), this, SLOT(childStarted()));
     cout << "Starting your program..." << endl;
+}
+
+void Battle::setMapOutput()
+{
+    displayMap = true;
 }
 
 void Battle::readChildProcess()
@@ -282,10 +279,10 @@ int Battle::addMinion(int num, int x, int y)
             newMinion = new Minion('1', 1500, 5, 0.3f, 5, 3, 1, 2, this, this);
             break;
         case 2:
-            newMinion = new Minion('2', 500, 4, 0.4f, 15, 3, 1, 2, this, this);
+            newMinion = new Minion('2', 700, 3, 0.2f, -5, 5, 1, 1, this, this);
             break;
         case 3:
-            newMinion = new Minion('3', 700, 3, 0.2f, -5, 5, 1, 1, this, this);
+            newMinion = new Minion('3', 500, 4, 0.4f, 15, 3, 1, 2, this, this);
             break;
         case 4:
             newMinion = new Minion('4', 3500, 7, 0.2f, 1, 2, 1, 2, this, this);
@@ -297,7 +294,7 @@ int Battle::addMinion(int num, int x, int y)
             newMinion = new Minion('6', 300, 4, 0.3f, 10, 5, 1, 2, this, this);
             break;
         case 7:
-            newMinion = new Minion('7', 1500, 5, 0.1f, 20, 2, 1, 2, this, this);
+            newMinion = new Minion('7', 2500, 9, 0.1f, 10, 2, 1, 2, this, this);
             break;
         case 8:
             newMinion = new Minion('8', 1500, 5, 0.1f, 20, 2, 1, 2, this, this);
@@ -452,11 +449,19 @@ void Battle::clk()
     comp1->write(toSend.toStdString().c_str());
     for(int i = 0;i < 22;++i) {
         comp1->write(QByteArray(map[i]).append("\n"));
-        cout << map[i] << endl;
     }
     for(int i = 0;i < 22;++i) {
         comp1->write(QByteArray(map_hp[i]).append("\n"));
-        cout << map_hp[i] << endl;
+    }
+
+    if(displayMap) {
+        cout << toSend.toStdString();
+        for(int i = 0;i < 22;++i) {
+            cout << map[i] << endl;
+        }
+        for(int i = 0;i < 22;++i) {
+            cout << map_hp[i] << endl;
+        }
     }
 }
 

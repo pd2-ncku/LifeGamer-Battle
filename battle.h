@@ -19,6 +19,7 @@ public:
     ~Battle();
     void startBattle();
     void setCompetitor(QString path);
+    void setMapOutput();
 
     enum summon_result {
         SummonSuccess,
@@ -48,6 +49,7 @@ private:
     bool started;
     int mana_comp1;
     QNetworkAccessManager* serverConnection;
+    bool displayMap;
 
     QProcess *comp1;
     QString comp1_command;
