@@ -18,8 +18,9 @@ public:
     explicit Battle(QObject *parent = 0);
     ~Battle();
     void startBattle();
-    void setCompetitor(QString path);
+    bool setCompetitor(QString path);
     void setMapOutput();
+    void setEchoOutput();
 
     enum summon_result {
         SummonSuccess,
@@ -50,6 +51,7 @@ private:
     int mana_comp1;
     QNetworkAccessManager* serverConnection;
     bool displayMap;
+    bool echoCommand;
 
     QProcess *comp1;
     QString comp1_command;
@@ -66,7 +68,6 @@ private:
 
 private slots:
     void clk(); /* Game clock */
-    void childStarted();
     void gameFinished(int SN);
 };
 

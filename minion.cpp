@@ -56,6 +56,8 @@ void Minion::active()
 void Minion::walk()
 {
     int target_x, target_y;
+    int random_effect[3] = {-1, 0, 1};
+    int ran = random_effect[qrand() % 3];
 
     /* decide walking target */
     if(group == 1) { /* left side */
@@ -65,26 +67,26 @@ void Minion::walk()
                 target_y = 25;
             }
             else if(battle->map[6][41] == '#') { /* upper tower */
-                target_x = 6;
+                target_x = 5 + ran;
                 target_y = 41;
             }
-            else { /* lower tower */
-                target_x = 11;
-                target_y = 43;
+            else { /* main tower */
+                target_x = 10 + ran;
+                target_y = 45;
             }
         }
         else {
-            if(y < 25) { /* upper bridge */
+            if(y < 25) { /* lower bridge */
                 target_x = 14;
                 target_y = 25;
             }
-            else if(battle->map[15][41] == '#') { /* upper tower */
-                target_x = 15;
+            else if(battle->map[15][41] == '#') { /* lower tower */
+                target_x = 16 + ran;
                 target_y = 41;
             }
             else {
-                target_x = 11;
-                target_y = 43;
+                target_x = 11 + ran;
+                target_y = 45;
             }
         }
     }
@@ -95,26 +97,26 @@ void Minion::walk()
                 target_y = 26;
             }
             else if(battle->map[6][10] == '#') { /* upper tower */
-                target_x = 6;
+                target_x = 5 + ran;
                 target_y = 10;
             }
             else {
-                target_x = 10;
-                target_y = 8;
+                target_x = 10 + ran;
+                target_y = 6;
             }
         }
         else {
-            if(y > 26) { /* upper bridge */
+            if(y > 26) { /* lower bridge */
                 target_x = 14;
                 target_y = 26;
             }
-            else if(battle->map[15][10] == '#') { /* upper tower */
-                target_x = 15;
+            else if(battle->map[15][10] == '#') { /* lower tower */
+                target_x = 16 + ran;
                 target_y = 10;
             }
             else {
-                target_x = 10;
-                target_y = 8;
+                target_x = 11 + ran;
+                target_y = 6;
             }
         }
     }

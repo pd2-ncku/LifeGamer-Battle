@@ -23,6 +23,7 @@ Battle::Battle(QObject *parent) : QObject(parent),
     mana_comp1(5),
     serverConnection(new QNetworkAccessManager),
     displayMap(false),
+    echoCommand(false),
     comp1_command(""),
     minion_cost{5, 3, 4, 7, 1, 4, 9, 5}
 {
@@ -45,6 +46,15 @@ void Battle::startBattle()
     int buf[8];
     started = true;
     QTextStream sbstream(&comp1_command);
+    if(echoCommand) {
+        cout << comp1_command.toStdString();
+    }
+    if(comp1_command.length() != 16) {
+        cout << "Deck registration error: command format error." << endl;
+        comp1->terminate();
+        emit endGame();
+        return;
+    }
     for(int i = 0;i < 8;++i) {
         sbstream >> buf[i];
         if(buf[i] <= 0 || buf[i] > 8) {
@@ -71,18 +81,30 @@ void Battle::startBattle()
     comp1_command.clear();
 }
 
-void Battle::setCompetitor(QString path)
+bool Battle::setCompetitor(QString path)
 {
     comp1 = new QProcess(this);
     comp1->start(path);
     connect(comp1, SIGNAL(readyReadStandardOutput()), this, SLOT(readChildProcess()));
-    connect(comp1, SIGNAL(started()), this, SLOT(childStarted()));
     cout << "Starting your program..." << endl;
+    if(!comp1->waitForStarted(3000)) {
+        cout << "Error: cannot start your program!" << endl;
+        return false;
+    }
+    else {
+        cout << "Your program has started." << endl;
+        return true;
+    }
 }
 
 void Battle::setMapOutput()
 {
     displayMap = true;
+}
+
+void Battle::setEchoOutput()
+{
+    echoCommand = true;
 }
 
 void Battle::readChildProcess()
@@ -140,22 +162,22 @@ void Battle::initTower(int SN)
     int x, y, size, group, target, p_x, p_y, atk, hp; /* p_x p_y is for attack detection */
     switch(SN) { /* 123:group1, 456:group2, 2 and 5 are large tower */
     case 1:
-        x = 3;y = 7;size = 4;group = 1;p_x = 6;p_y = 10;hp = 4000;atk = 4;
+        x = 3;y = 7;size = 4;group = 1;p_x = 5;p_y = 10;hp = 4000;atk = 4;
         break;
     case 2:
         x = 8;y = 3;size = 6;group = 1;p_x = 10;p_y = 8;hp = 5000;atk = 5;
         break;
     case 3:
-        x = 15;y = 7;size = 4;group = 1;p_x = 15;p_y = 10;hp = 4000;atk = 4;
+        x = 15;y = 7;size = 4;group = 1;p_x = 16;p_y = 10;hp = 4000;atk = 4;
         break;
     case 4:
-        x = 3;y = 41;size = 4;group = 2;p_x = 6;p_y = 41;hp = 4000;atk = 4;
+        x = 3;y = 41;size = 4;group = 2;p_x = 5;p_y = 41;hp = 4000;atk = 4;
         break;
     case 5:
         x = 8;y = 43;size = 6;group = 2;p_x = 11;p_y = 43;hp = 5000;atk = 5;
         break;
     case 6:
-        x = 15;y = 41;size = 4;group = 2;p_x = 15;p_y = 41;hp = 4000;atk = 4;
+        x = 15;y = 41;size = 4;group = 2;p_x = 16;p_y = 41;hp = 4000;atk = 4;
         break;
     }
     if(group == 1) target = 2;
@@ -398,6 +420,9 @@ void Battle::clk()
 
     /* summon new minion */
     if(comp1_command.length()) {
+        if(echoCommand) {
+            cout << comp1_command.toStdString();
+        }
         int command, minion, x, y;
         QTextStream compcmd(&comp1_command);
         while(!compcmd.atEnd()) {
@@ -463,11 +488,6 @@ void Battle::clk()
             cout << map_hp[i] << endl;
         }
     }
-}
-
-void Battle::childStarted()
-{
-    cout << "Your program has started!" << endl;
 }
 
 void Battle::gameFinished(int SN)

@@ -11,16 +11,23 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("PD2 proj.1 debug tool");
+    QCoreApplication::setApplicationName("PD2 proj.1 debugtool");
+    QCoreApplication::setApplicationVersion("v1.0");
 
     QCommandLineParser parser;
 
-    parser.addHelpOption();
-    parser.addPositionalArgument("path", QCoreApplication::translate("main", "Specific your program location."));
+    parser.addPositionalArgument("<path>", QCoreApplication::translate("main", "Specific your program location."));
 
     QCommandLineOption showMap(QStringList() << "m" << "map",
                 QCoreApplication::translate("main", "Show map during game."));
     parser.addOption(showMap);
+
+    QCommandLineOption echo(QStringList() << "e" << "echo",
+                QCoreApplication::translate("main", "Echo your command."));
+    parser.addOption(echo);
+
+    parser.addHelpOption();
+    parser.addVersionOption();
 
     parser.process(app);
 
@@ -37,7 +44,12 @@ int main(int argc, char *argv[])
         if(parser.isSet(showMap)) {
             battle.setMapOutput();
         }
-        battle.setCompetitor(args.at(0));
+        if(parser.isSet(echo)) {
+            battle.setEchoOutput();
+        }
+        if(!battle.setCompetitor(args.at(0))) {
+            return 0;
+        }
     }
 
     return app.exec();
