@@ -54,6 +54,7 @@ private:
     bool echoCommand;
 
     QProcess *comp1;
+    QProcess *comp2;
     QString comp1_command;
     int deck[4];
     int todraw[4];

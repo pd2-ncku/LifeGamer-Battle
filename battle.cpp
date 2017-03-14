@@ -46,11 +46,12 @@ void Battle::startBattle()
     int buf[8];
     started = true;
     QTextStream sbstream(&comp1_command);
+
     if(echoCommand) {
         cout << comp1_command.toStdString();
     }
     if(comp1_command.length() != 16) {
-        cout << "Deck registration error: command format error." << endl;
+        cout << "\033[1;32;31mDeck registration error: command format error.\033[m" << endl;
         comp1->terminate();
         emit endGame();
         return;
@@ -58,14 +59,14 @@ void Battle::startBattle()
     for(int i = 0;i < 8;++i) {
         sbstream >> buf[i];
         if(buf[i] <= 0 || buf[i] > 8) {
-            cout << "Deck registration error: no such minion." << endl;
+            cout << "\033[1;32;31mDeck registration error: no such minion.\033[m" << endl;
             comp1->terminate();
             emit endGame();
             return;
         }
         for(int j = 0;j < i;j++) {
             if(buf[i] == buf[j]) {
-                cout << "Deck registration error: duplicated minion." << endl;
+                cout << "\033[1;32;31mDeck registration error: duplicated minion.\033[m" << endl;
                 comp1->terminate();
                 emit endGame();
                 return;
@@ -77,7 +78,7 @@ void Battle::startBattle()
         deck[i] = buf[i];
         todraw[i] = buf[i + 4];
     }
-    cout << "Deck registration success." << endl;
+    cout << "\033[1;32;32mDeck registration success.\033[m" << endl;
     comp1_command.clear();
 }
 
@@ -88,11 +89,11 @@ bool Battle::setCompetitor(QString path)
     connect(comp1, SIGNAL(readyReadStandardOutput()), this, SLOT(readChildProcess()));
     cout << "Starting your program..." << endl;
     if(!comp1->waitForStarted(3000)) {
-        cout << "Error: cannot start your program!" << endl;
+        cout << "\033[1;32;31mError: cannot start your program!\033[m" << endl;
         return false;
     }
     else {
-        cout << "Your program has started." << endl;
+        cout << "\033[1;32;32mYour program has started.\033[m" << endl;
         return true;
     }
 }
@@ -275,23 +276,23 @@ int Battle::addMinion(int num, int x, int y)
         }
     }
     if(!inDeck) {
-        cout << "summon minion " << num << " at " << x << " " << y << " failed: minion not in deck." << endl;
+        cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: minion not in deck.\033[m" << endl;
         return SummonFailedNotInDeck;
     }
     else if(num < 1 || num > 8) {
-        cout << "summon minion " << num << " at " << x << " " << y << " failed: no such minion." << endl;
+        cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: no such minion.\033[m" << endl;
         return SummonFailedUnknowMinion;
     }
     else if(mana_comp1 < minion_cost[num - 1]) {
-        cout << "summon minion " << num << " at " << x << " " << y << " failed: no enough mana." << endl;
+        cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: no enough mana.\033[m" << endl;
         return SummonFailedOM;
     }
     else if(map[x][y] != ' ') {
-        cout << "summon minion " << num << " at " << x << " " << y << " failed: map occupied." << endl;
+        cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: map occupied.\033[m" << endl;
         return SummonFailedOccupied;
     }
     else if(y > 24) {
-        cout << "summon minion " << num << " at " << x << " " << y << " failed: out of range." << endl;
+        cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: out of range.\033[m" << endl;
         return SummonFailedOutOfRange;
     }
     else {
@@ -332,7 +333,7 @@ int Battle::addMinion(int num, int x, int y)
                 mana_comp1 -= minion_cost[num - 1];
             }
         }
-        cout << "summon minion " << num << " at " << x << " " << y << " success." << endl;
+        cout << "\033[1;32;32msummon minion " << num << " at " << x << " " << y << " success.\033[m" << endl;
         return SummonSuccess;
     }
 }
@@ -421,7 +422,7 @@ void Battle::clk()
     /* summon new minion */
     if(comp1_command.length()) {
         if(echoCommand) {
-            cout << comp1_command.toStdString();
+            cout << "\033[1;36m" << comp1_command.toStdString() << "\033[m";
         }
         int command, minion, x, y;
         QTextStream compcmd(&comp1_command);
@@ -526,4 +527,5 @@ void Battle::gameFinished(int SN)
             }
         }
     }
+    emit endGame();
 }
