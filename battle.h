@@ -45,6 +45,8 @@ signals:
 public slots:
     void readP1();
     void readP2();
+    void p1_error(QProcess::ProcessError error);
+    void p2_error(QProcess::ProcessError error);
 
 private:
     char map[22][53];
@@ -58,6 +60,7 @@ private:
     QNetworkAccessManager* serverConnection;
     bool displayMap;
     bool echoCommand;
+    bool judged;
 
     QProcess *p1;
     QString p1_cmd;

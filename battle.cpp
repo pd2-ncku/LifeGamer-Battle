@@ -25,6 +25,7 @@ Battle::Battle(QObject *parent) : QObject(parent),
     serverConnection(new QNetworkAccessManager),
     displayMap(false),
     echoCommand(false),
+    judged(false),
     p1(new QProcess(this)),
     p2(new QProcess(this)),
     minion_cost{5, 3, 4, 7, 1, 4, 9, 5}
@@ -35,10 +36,21 @@ Battle::Battle(QObject *parent) : QObject(parent),
     p1_cmd.clear();
     p2_cmd.clear();
 
+    /* ticking signal */
     connect(synchrogazer, SIGNAL(timeout()), this, SLOT(clk()));
+
+    /* internal signal communication */
     connect(this, SIGNAL(decideWinLose(int)), this, SLOT(gameFinished(int)));
     connect(this, SIGNAL(playerReady(int)), this, SLOT(changePlayerState(int)));
     connect(this, SIGNAL(endGame()), this, SLOT(postSolve()));
+
+    /* player signals */
+    connect(p1, SIGNAL(readyReadStandardOutput()), this, SLOT(readP1()));
+    connect(p1, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(p1_error(QProcess::ProcessError)));
+
+    connect(p2, SIGNAL(readyReadStandardOutput()), this, SLOT(readP2()));
+    connect(p2, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(p2_error(QProcess::ProcessError)));
+
     synchrogazer->start(100);
 }
 
@@ -54,7 +66,6 @@ void Battle::startBattle()
 
 bool Battle::setP1(QString path)
 {
-    connect(p1, SIGNAL(readyReadStandardOutput()), this, SLOT(readP1()));
     p1->start(path);
 
     cout << "Starting your program..." << endl;
@@ -70,7 +81,6 @@ bool Battle::setP1(QString path)
 
 bool Battle::setP2(QString path)
 {
-    connect(p2, SIGNAL(readyReadStandardOutput()), this, SLOT(readP2()));
     p2->start(path);
 
     if(!p2->waitForStarted(1000)) {
@@ -100,6 +110,26 @@ void Battle::readP1()
 void Battle::readP2()
 {
     p2_cmd += p2->readAllStandardOutput();
+}
+
+void Battle::p1_error(QProcess::ProcessError error)
+{
+    if(!judged && error == QProcess::Crashed) {
+        judged = true;
+        cerr << "Player 1 fault" << endl;
+        cerr << "Player 2 win" << endl;
+        emit endGame();
+    }
+}
+
+void Battle::p2_error(QProcess::ProcessError error)
+{
+    if(!judged && error == QProcess::Crashed) {
+        judged = true;
+        cerr << "Player 2 fault" << endl;
+        cerr << "Player 1 win" << endl;
+        emit endGame();
+    }
 }
 
 void Battle::initMap()
@@ -652,6 +682,7 @@ void Battle::changePlayerState(int player)
 
 void Battle::gameFinished(int SN)
 {
+    judged = true;
     synchrogazer->stop();
     if(SN == 2) {
         cerr << "Player 2 win" << endl;
