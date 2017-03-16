@@ -18,7 +18,8 @@ public:
     explicit Battle(QObject *parent = 0);
     ~Battle();
     void startBattle();
-    bool setCompetitor(QString path);
+    bool setP1(QString path);
+    bool setP2(QString path);
     void setMapOutput();
     void setEchoOutput();
 
@@ -33,13 +34,16 @@ public:
 
     friend class Minion;
     friend class Tower;
+
 signals:
     void signalLogHp();
     void endGame();
     void decideWinLose(int SN);
+    void playerReady(int player);
 
 public slots:
-    void readChildProcess();
+    void readP1();
+    void readP2();
 
 private:
     char map[22][53];
@@ -48,16 +52,22 @@ private:
     QTimer *synchrogazer; /* for map synchronization(Listen to my song~) */
     QLinkedList<Unit*> UnitList;
     bool started;
-    int mana_comp1;
+    int p1_mana;
+    int p2_mana;
     QNetworkAccessManager* serverConnection;
     bool displayMap;
     bool echoCommand;
 
-    QProcess *comp1;
-    QProcess *comp2;
-    QString comp1_command;
-    int deck[4];
-    int todraw[4];
+    QProcess *p1;
+    QString p1_cmd;
+    int p1_deck[4];
+    int p1_todraw[4];
+
+    QProcess *p2;
+    QString p2_cmd;
+    int p2_deck[4];
+    int p2_todraw[4];
+
     int minion_cost[8];
 
     void initMap();
@@ -65,10 +75,14 @@ private:
     void destroyTower(int SN);
     void modifyTowerHp(int SN, int hpRatio);
 
-    int addMinion(int num, int x, int y);
+    int addMinion(int player, int num, int x, int y);
+
+    void p1_reg();
+    void p2_reg();
 
 private slots:
     void clk(); /* Game clock */
+    void changePlayerState(int player);
     void gameFinished(int SN);
 };
 
