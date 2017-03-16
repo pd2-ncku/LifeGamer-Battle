@@ -25,6 +25,8 @@ Battle::Battle(QObject *parent) : QObject(parent),
     serverConnection(new QNetworkAccessManager),
     displayMap(false),
     echoCommand(false),
+    p1(new QProcess(this)),
+    p2(new QProcess(this)),
     minion_cost{5, 3, 4, 7, 1, 4, 9, 5}
 {
     synchrogazer->setTimerType(Qt::PreciseTimer);
@@ -36,6 +38,7 @@ Battle::Battle(QObject *parent) : QObject(parent),
     connect(synchrogazer, SIGNAL(timeout()), this, SLOT(clk()));
     connect(this, SIGNAL(decideWinLose(int)), this, SLOT(gameFinished(int)));
     connect(this, SIGNAL(playerReady(int)), this, SLOT(changePlayerState(int)));
+    connect(this, SIGNAL(endGame()), this, SLOT(postSolve()));
     synchrogazer->start(100);
 }
 
@@ -51,9 +54,9 @@ void Battle::startBattle()
 
 bool Battle::setP1(QString path)
 {
-    p1 = new QProcess(this);
-    p1->start(path);
     connect(p1, SIGNAL(readyReadStandardOutput()), this, SLOT(readP1()));
+    p1->start(path);
+
     cout << "Starting your program..." << endl;
     if(!p1->waitForStarted(1000)) {
         cout << "\033[1;32;31mError: cannot start your program!\033[m" << endl;
@@ -67,10 +70,9 @@ bool Battle::setP1(QString path)
 
 bool Battle::setP2(QString path)
 {
-
-    p2 = new QProcess(this);
-    p2->start(path);
     connect(p2, SIGNAL(readyReadStandardOutput()), this, SLOT(readP2()));
+    p2->start(path);
+
     if(!p2->waitForStarted(1000)) {
         cout << "\033[1;32;31mError: cannot start your program!\033[m" << endl;
         return false;
@@ -364,23 +366,23 @@ void Battle::p1_reg()
         cout << p1_cmd.toStdString();
     }
     if(p1_cmd.length() != 16) {
+        cerr << "Card choose fail" << endl;
         cout << "\033[1;32;31mDeck registration error: command format error.\033[m" << endl;
-        p1->terminate();
         emit endGame();
         return;
     }
     for(int i = 0;i < 8;++i) {
         sbstream >> buf[i];
         if(buf[i] <= 0 || buf[i] > 8) {
+            cerr << "Card choose fail" << endl;
             cout << "\033[1;32;31mDeck registration error: no such minion.\033[m" << endl;
-            p1->terminate();
             emit endGame();
             return;
         }
         for(int j = 0;j < i;j++) {
             if(buf[i] == buf[j]) {
+                cerr << "Card choose fail" << endl;
                 cout << "\033[1;32;31mDeck registration error: duplicated minion.\033[m" << endl;
-                p1->terminate();
                 emit endGame();
                 return;
             }
@@ -391,6 +393,7 @@ void Battle::p1_reg()
         p1_deck[i] = buf[i];
         p1_todraw[i] = buf[i + 4];
     }
+    cerr << "Card choose success" << endl;
     cout << "\033[1;32;32mDeck registration success.\033[m" << endl;
     p1_cmd.clear();
     emit playerReady(1);
@@ -406,7 +409,6 @@ void Battle::p2_reg()
     }
     if(p2_cmd.length() != 16) {
         cout << "\033[1;32;31mDeck registration error: command format error.\033[m" << endl;
-        p2->terminate();
         emit endGame();
         return;
     }
@@ -414,14 +416,12 @@ void Battle::p2_reg()
         sbstream >> buf[i];
         if(buf[i] <= 0 || buf[i] > 8) {
             cout << "\033[1;32;31mDeck registration error: no such minion.\033[m" << endl;
-            p2->terminate();
             emit endGame();
             return;
         }
         for(int j = 0;j < i;j++) {
             if(buf[i] == buf[j]) {
                 cout << "\033[1;32;31mDeck registration error: duplicated minion.\033[m" << endl;
-                p2->terminate();
                 emit endGame();
                 return;
             }
@@ -439,6 +439,7 @@ void Battle::p2_reg()
 
 void Battle::clk()
 {
+    static bool p1_judge = false;
     if(countdown == 0)
         emit decideWinLose(0);
     if(!started) {
@@ -532,9 +533,17 @@ void Battle::clk()
         while(!compcmd.atEnd()) {
             compcmd >> command;
             if(command == 0) break;
-            else {
+            else if(command == 1) {
+                if(!p1_judge) {
+                    cerr << "Interact success" << endl;
+                    p1_judge = true;
+                }
                 compcmd >> minion >> x >> y;
                 addMinion(1, minion, x, y);
+            }
+            else {
+                cerr << "Interact fail" << endl;
+                break;
             }
         }
         p1_cmd.clear();
@@ -548,10 +557,11 @@ void Battle::clk()
         while(!compcmd.atEnd()) {
             compcmd >> command;
             if(command == 0) break;
-            else {
+            else if(command == 1) {
                 compcmd >> minion >> x >> y;
                 addMinion(2, minion, x, y);
             }
+            else break;
         }
         p2_cmd.clear();
     }
@@ -643,8 +653,14 @@ void Battle::changePlayerState(int player)
 void Battle::gameFinished(int SN)
 {
     synchrogazer->stop();
-    if(SN == 2) cout << "You Lose" << endl;
-    else if(SN == 5) cout << "You Win" << endl;
+    if(SN == 2) {
+        cerr << "Player 2 win" << endl;
+        cout << "You Lose" << endl;
+    }
+    else if(SN == 5) {
+        cerr << "Player 1 win" << endl;
+        cout << "You Win" << endl;
+    }
     else {
         bool tower[6];
         int cnt1 = 0, cnt2 = 0;
@@ -659,22 +675,37 @@ void Battle::gameFinished(int SN)
             }
         }
         if(!tower[1]) {
+            cerr << "Player 2 win" << endl;
             cout << "You Lose" << endl;
         }
         else if(!tower[4]) {
+            cerr << "Player 1 win" << endl;
             cout << "You Win" << endl;
         }
         else {
             if(cnt1 > cnt2) {
+                cerr << "Player 1 win" << endl;
                 cout << "You Win" << endl;
             }
             else if(cnt1 == cnt2) {
+                cerr << "Tie" << endl;
                 cout << "Draw" << endl;
             }
             else {
+                cerr << "Player 2 win" << endl;
                 cout << "You Lose" << endl;
             }
         }
     }
     emit endGame();
+}
+
+void Battle::postSolve()
+{
+    p1->kill();
+    p2->kill();
+    p1->waitForFinished(1000);
+    p2->waitForFinished(1000);
+
+    emit quit();
 }

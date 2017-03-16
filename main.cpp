@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     const QStringList args = parser.positionalArguments();
 
     Battle battle;
-    QObject::connect(&battle, SIGNAL(endGame()), &app, SLOT(quit()));
+    QObject::connect(&battle, SIGNAL(quit()), &app, SLOT(quit()));
 
     if(args.size() < 2) {
         cerr << parser.helpText().toStdString();
