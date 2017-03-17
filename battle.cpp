@@ -494,7 +494,7 @@ void Battle::clk()
     /* summon new minion */
     if(p1_cmd.length()) {
         if(echoCommand) {
-            cout << "\033[1;36mPlayer 1: " << p1_cmd.toStdString() << "\033[m";
+            cout << "\033[1;36mPlayer 1:\n" << p1_cmd.toStdString() << "\033[m";
         }
         int command, minion, x, y;
         QTextStream compcmd(&p1_cmd);
@@ -514,7 +514,7 @@ void Battle::clk()
     }
     if(p2_cmd.length()) {
         if(echoCommand) {
-            cout << "\033[1;36mPlayer 2: " << p2_cmd.toStdString() << "\033[m";
+            cout << "\033[1;36mPlayer 2:\n" << p2_cmd.toStdString() << "\033[m";
         }
         int command, minion, x, y;
         QTextStream compcmd(&p2_cmd);

@@ -3,7 +3,7 @@ QT -= gui
 
 CONFIG += c++11
 
-TARGET = CR_server
+TARGET = debugtool
 CONFIG += console
 CONFIG -= app_bundle
 
