@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("PD2 proj.1 debugtool");
-    QCoreApplication::setApplicationVersion("v1.0");
+    QCoreApplication::setApplicationVersion("v2.0");
 
     QCommandLineParser parser;
 
@@ -50,11 +50,9 @@ int main(int argc, char *argv[])
             battle.setEchoOutput();
         }
         if(!battle.setP1(args.at(0))) {
-            cerr << "P1 start failed." << endl;
             return 0;
         }
         if(!battle.setP2(args.at(1))) {
-            cerr << "P2 start failed." << endl;
             return 0;
         }
     }
