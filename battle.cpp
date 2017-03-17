@@ -68,13 +68,13 @@ bool Battle::setP1(QString path)
 {
     p1->start(path);
 
-    cout << "Starting your program..." << endl;
+    cerr << "Starting your program..." << endl;
     if(!p1->waitForStarted(1000)) {
-        cout << "\033[1;32;31mError: cannot start your program!\033[m" << endl;
+        cerr << "\033[1;32;31mError: cannot start your program!\033[m" << endl;
         return false;
     }
     else {
-        cout << "\033[1;32;32mYour program has started.\033[m" << endl;
+        cerr << "\033[1;32;32mYour program has started.\033[m" << endl;
         return true;
     }
 }
@@ -84,7 +84,7 @@ bool Battle::setP2(QString path)
     p2->start(path);
 
     if(!p2->waitForStarted(1000)) {
-        cout << "\033[1;32;31mError: cannot start your program!\033[m" << endl;
+        cerr << "\033[1;32;31mError: cannot start your program!\033[m" << endl;
         return false;
     }
     else {
@@ -313,23 +313,23 @@ int Battle::addMinion(int player, int num, int x, int y)
         }
     }
     if(!inDeck) {
-        cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: minion not in deck.\033[m" << endl;
+        cerr << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: minion not in deck.\033[m" << endl;
         return SummonFailedNotInDeck;
     }
     else if(num < 1 || num > 8) {
-        cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: no such minion.\033[m" << endl;
+        cerr << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: no such minion.\033[m" << endl;
         return SummonFailedUnknowMinion;
     }
     else if(mana < minion_cost[num - 1]) {
-        cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: no enough mana.\033[m" << endl;
+        cerr << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: no enough mana.\033[m" << endl;
         return SummonFailedOM;
     }
     else if(y_raw > 24 || y_raw < 1 || x > 20 || x < 1) {
-        cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: out of range.\033[m" << endl;
+        cerr << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: out of range.\033[m" << endl;
         return SummonFailedOutOfRange;
     }
     else if(map[x][y] != ' ') {
-        cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: map occupied.\033[m" << endl;
+        cerr << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: map occupied.\033[m" << endl;
         return SummonFailedOccupied;
     }
     else {
@@ -382,7 +382,7 @@ int Battle::addMinion(int player, int num, int x, int y)
                 }
             }
         }
-        cout << "\033[1;32;32msummon minion " << num << " at " << x << " " << y << " success.\033[m" << endl;
+        cerr << "\033[1;32;32msummon minion " << num << " at " << x << " " << y << " success.\033[m" << endl;
         return SummonSuccess;
     }
 }
@@ -397,7 +397,7 @@ void Battle::p1_reg()
     }
     if(p1_cmd.length() != 16) {
         cerr << "Card choose fail" << endl;
-        cout << "\033[1;32;31mDeck registration error: command format error.\033[m" << endl;
+        cerr << "\033[1;32;31mDeck registration error: command format error.\033[m" << endl;
         emit endGame();
         return;
     }
@@ -405,14 +405,14 @@ void Battle::p1_reg()
         sbstream >> buf[i];
         if(buf[i] <= 0 || buf[i] > 8) {
             cerr << "Card choose fail" << endl;
-            cout << "\033[1;32;31mDeck registration error: no such minion.\033[m" << endl;
+            cerr << "\033[1;32;31mDeck registration error: no such minion.\033[m" << endl;
             emit endGame();
             return;
         }
         for(int j = 0;j < i;j++) {
             if(buf[i] == buf[j]) {
                 cerr << "Card choose fail" << endl;
-                cout << "\033[1;32;31mDeck registration error: duplicated minion.\033[m" << endl;
+                cerr << "\033[1;32;31mDeck registration error: duplicated minion.\033[m" << endl;
                 emit endGame();
                 return;
             }
@@ -424,7 +424,7 @@ void Battle::p1_reg()
         p1_todraw[i] = buf[i + 4];
     }
     cerr << "Card choose success" << endl;
-    cout << "\033[1;32;32mDeck registration success.\033[m" << endl;
+    cerr << "\033[1;32;32mDeck registration success.\033[m" << endl;
     p1_cmd.clear();
     emit playerReady(1);
 }
@@ -435,23 +435,23 @@ void Battle::p2_reg()
     QTextStream sbstream(&p2_cmd);
 
     if(echoCommand) {
-        cout << p2_cmd.toStdString();
+        cerr << p2_cmd.toStdString();
     }
     if(p2_cmd.length() != 16) {
-        cout << "\033[1;32;31mDeck registration error: command format error.\033[m" << endl;
+        cerr << "\033[1;32;31mDeck registration error: command format error.\033[m" << endl;
         emit endGame();
         return;
     }
     for(int i = 0;i < 8;++i) {
         sbstream >> buf[i];
         if(buf[i] <= 0 || buf[i] > 8) {
-            cout << "\033[1;32;31mDeck registration error: no such minion.\033[m" << endl;
+            cerr << "\033[1;32;31mDeck registration error: no such minion.\033[m" << endl;
             emit endGame();
             return;
         }
         for(int j = 0;j < i;j++) {
             if(buf[i] == buf[j]) {
-                cout << "\033[1;32;31mDeck registration error: duplicated minion.\033[m" << endl;
+                cerr << "\033[1;32;31mDeck registration error: duplicated minion.\033[m" << endl;
                 emit endGame();
                 return;
             }
@@ -462,7 +462,7 @@ void Battle::p2_reg()
         p2_deck[i] = buf[i];
         p2_todraw[i] = buf[i + 4];
     }
-    cout << "\033[1;32;32mDeck registration success.\033[m" << endl;
+    cerr << "\033[1;32;32mDeck registration success.\033[m" << endl;
     p2_cmd.clear();
     emit playerReady(2);
 }
@@ -556,7 +556,7 @@ void Battle::clk()
     /* summon new minion */
     if(p1_cmd.length()) {
         if(echoCommand) {
-            cout << "\033[1;36m" << p1_cmd.toStdString() << "\033[m";
+            cerr << "\033[1;36m" << p1_cmd.toStdString() << "\033[m";
         }
         int command, minion, x, y;
         QTextStream compcmd(&p1_cmd);
@@ -580,7 +580,7 @@ void Battle::clk()
     }
     if(p2_cmd.length()) {
         if(echoCommand) {
-            cout << "\033[1;36m" << p2_cmd.toStdString() << "\033[m";
+            cerr << "\033[1;36m" << p2_cmd.toStdString() << "\033[m";
         }
         int command, minion, x, y;
         QTextStream compcmd(&p2_cmd);
@@ -662,7 +662,7 @@ void Battle::clk()
             cout << map[i] << endl;
         }
         for(int i = 0;i < 22;++i) {
-            cout << map_hp[i] << endl;
+            cerr << map_hp[i] << endl;
         }
     }
 }
