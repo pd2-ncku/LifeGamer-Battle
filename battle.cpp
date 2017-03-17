@@ -656,7 +656,7 @@ void Battle::clk()
         p2->write(QByteArray(1, '\n'));
     }
 
-    if(displayMap) {
+    if(displayMap && !(countdown % 10)) {
         cout << p1_toSend.toStdString();
         for(int i = 0;i < 22;++i) {
             cout << map[i] << endl;
