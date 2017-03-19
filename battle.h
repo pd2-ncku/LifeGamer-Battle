@@ -66,11 +66,13 @@ private:
     QString p1_cmd;
     int p1_deck[4];
     int p1_todraw[4];
+    bool p1_ready;
 
     QProcess *p2;
     QString p2_cmd;
     int p2_deck[4];
     int p2_todraw[4];
+    bool p2_ready;
 
     int minion_cost[8];
 
