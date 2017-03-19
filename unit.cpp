@@ -1,6 +1,6 @@
 #include "unit.h"
 
-Unit::Unit(int hp, int cost, float walkSpeed, int atk, int attackRange, int group, int target, Battle *battle, QObject *parent)
+Unit::Unit(int hp, int cost, float walkSpeed, int atk, int attackRange, int group, Battle *battle, QObject *parent)
     : QObject(parent),
       MaxHp(hp),
       hp(hp),
@@ -9,10 +9,9 @@ Unit::Unit(int hp, int cost, float walkSpeed, int atk, int attackRange, int grou
       atk(atk),
       attackRange(attackRange),
       group(group),
-      target(target),
       battle(battle)
 {
-
+    previousHpRatio = 100;
 }
 
 Unit::~Unit()
@@ -43,6 +42,11 @@ int Unit::getHpChange()
 int Unit::getCost()
 {
     return cost;
+}
+
+void Unit::setTarget(int target)
+{
+    this->target = target;
 }
 
 void Unit::onhit(int enemyATK)

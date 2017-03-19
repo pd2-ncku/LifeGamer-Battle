@@ -5,9 +5,10 @@
 #include <QDebug>
 
 Tower::Tower(int hp, int atk, int attackRange, int group, int target, Battle *battle, QObject *parent)
-    : Unit(hp, 0, 0, atk, attackRange, group, target, battle, parent)
+    : Unit(hp, 0, 0, atk, attackRange, group, battle, parent)
 {
     connect(battle, SIGNAL(signalLogHp()), this, SLOT(setPreviousHpRatio()));
+    this->target = target;
 }
 
 void Tower::setPoint(int x, int y)

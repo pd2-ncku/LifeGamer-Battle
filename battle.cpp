@@ -16,42 +16,44 @@ using namespace std;
 #include "minion.h"
 #include "tower.h"
 
+/* minions */
+#include "humanknight.h"
+#include "humanpriest.h"
+#include "humanthief.h"
+#include "elfgiant.h"
+#include "elfwisp.h"
+#include "elfarcher.h"
+#include "undeadsamurai.h"
+#include "sgram.h"
+
 Battle::Battle(QObject *parent) : QObject(parent),
     countdown(3*60*10),
     synchrogazer(new QTimer),
     started(false),
-    p1_mana(5),
-    p2_mana(5),
     serverConnection(new QNetworkAccessManager),
     displayMap(false),
     echoCommand(false),
     judged(false),
-    p1(new QProcess(this)),
-    p1_ready(false),
-    p2(new QProcess(this)),
-    p2_ready(false),
+    p1(new Player(this)),
+    p2(new Player(this)),
     minion_cost{5, 3, 4, 7, 1, 4, 9, 5}
 {
     synchrogazer->setTimerType(Qt::PreciseTimer);
     initMap();
-
-    p1_cmd.clear();
-    p2_cmd.clear();
 
     /* ticking signal */
     connect(synchrogazer, SIGNAL(timeout()), this, SLOT(clk()));
 
     /* internal signal communication */
     connect(this, SIGNAL(decideWinLose(int)), this, SLOT(gameFinished(int)));
-    connect(this, SIGNAL(playerReady(int)), this, SLOT(changePlayerState(int)));
     connect(this, SIGNAL(endGame()), this, SLOT(postSolve()));
 
     /* player signals */
-    connect(p1, SIGNAL(readyReadStandardOutput()), this, SLOT(readP1()));
     connect(p1, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(p1_error(QProcess::ProcessError)));
+    connect(p1, SIGNAL(endGame()), this, SLOT(postSolve()));
 
-    connect(p2, SIGNAL(readyReadStandardOutput()), this, SLOT(readP2()));
     connect(p2, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(p2_error(QProcess::ProcessError)));
+    connect(p2, SIGNAL(endGame()), this, SLOT(postSolve()));
 
     synchrogazer->start(100);
 }
@@ -102,16 +104,6 @@ void Battle::setMapOutput()
 void Battle::setEchoOutput()
 {
     echoCommand = true;
-}
-
-void Battle::readP1()
-{
-    p1_cmd += p1->readAllStandardOutput();
-}
-
-void Battle::readP2()
-{
-    p2_cmd += p2->readAllStandardOutput();
 }
 
 void Battle::p1_error(QProcess::ProcessError error)
@@ -290,25 +282,23 @@ void Battle::modifyTowerHp(int SN, int hpRatio)
 int Battle::addMinion(int player, int num, int x, int y)
 {
     bool inDeck = false;
-    int mana, group, enemy, y_raw = y;
+    int mana, group, y_raw = y;
     if(player == 1) {
-        mana = p1_mana;
+        mana = p1->mana;
         group = 1;
-        enemy = 2;
         for(int i = 0;i < 4;i++) {
-            if(p1_deck[i] == num) {
+            if(p1->deck[i] == num) {
                 inDeck = true;
                 break;
             }
         }
     }
     if(player == 2) {
-        mana = p2_mana;
+        mana = p2->mana;
         group = 2;
-        enemy = 1;
         y = 51 - y;
         for(int i = 0;i < 4;i++) {
-            if(p2_deck[i] == num) {
+            if(p2->deck[i] == num) {
                 inDeck = true;
                 break;
             }
@@ -338,135 +328,55 @@ int Battle::addMinion(int player, int num, int x, int y)
         Minion *newMinion;
         switch(num) {
         case 1:
-            newMinion = new Minion('1', 1500, 5, 0.3f, 5, 3, group, enemy, this, this);
+            newMinion = new HumanKnight(group, this, this);
             break;
         case 2:
-            newMinion = new Minion('2', 700, 3, 0.2f, -5, 5, group, group, this, this);
+            newMinion = new HumanPriest(group, this, this);
             break;
         case 3:
-            newMinion = new Minion('3', 500, 4, 0.4f, 15, 3, group, enemy, this, this);
+            newMinion = new HumanThief(group, this, this);
             break;
         case 4:
-            newMinion = new Minion('4', 3500, 7, 0.2f, 1, 2, group, enemy, this, this);
+            newMinion = new ElfGiant(group, this, this);
             break;
         case 5:
-            newMinion = new Minion('5', 300, 1, 0.3f, -1, 4, group, group, this, this);
+            newMinion = new ElfWisp(group, this, this);
             break;
         case 6:
-            newMinion = new Minion('6', 300, 4, 0.3f, 10, 5, group, enemy, this, this);
+            newMinion = new ElfArcher(group, this, this);
             break;
         case 7:
-            newMinion = new Minion('7', 2500, 9, 0.1f, 10, 2, group, enemy, this, this);
+            newMinion = new UndeadSamurai(group, this, this);
             break;
         case 8:
-            newMinion = new Minion('8', 1500, 5, 0.1f, 20, 2, group, enemy, this, this);
+            newMinion = new Sgram(group, this, this);
             break;
         }
         newMinion->setPoint(x, y);
         UnitList.append(static_cast<Unit*>(newMinion));
         if(player == 1) {
             for(int i = 0;i < 4;i++) {
-                if(p1_deck[i] == num) {
+                if(p1->deck[i] == num) {
                     int rand = qrand() % 4;
-                    p1_deck[i] = p1_todraw[rand];
-                    p1_todraw[rand] = num;
-                    p1_mana -= minion_cost[num - 1];
+                    p1->deck[i] = p1->todraw[rand];
+                    p1->todraw[rand] = num;
+                    p1->mana -= minion_cost[num - 1];
                 }
             }
         }
         if(player == 2) {
             for(int i = 0;i < 4;i++) {
-                if(p2_deck[i] == num) {
+                if(p2->deck[i] == num) {
                     int rand = qrand() % 4;
-                    p2_deck[i] = p2_todraw[rand];
-                    p2_todraw[rand] = num;
-                    p2_mana -= minion_cost[num - 1];
+                    p2->deck[i] = p2->todraw[rand];
+                    p2->todraw[rand] = num;
+                    p2->mana -= minion_cost[num - 1];
                 }
             }
         }
         cout << "\033[1;32;32msummon minion " << num << " at " << x << " " << y << " success.\033[m" << endl;
         return SummonSuccess;
     }
-}
-
-void Battle::p1_reg()
-{
-    int buf[8];
-    QTextStream sbstream(&p1_cmd);
-
-    if(echoCommand) {
-        cout << p1_cmd.toStdString();
-    }
-    if(p1_cmd.length() != 16) {
-        cerr << "Card choose fail" << endl;
-        cout << "\033[1;32;31mDeck registration error: command format error.\033[m" << endl;
-        emit endGame();
-        return;
-    }
-    for(int i = 0;i < 8;++i) {
-        sbstream >> buf[i];
-        if(buf[i] <= 0 || buf[i] > 8) {
-            cerr << "Card choose fail" << endl;
-            cout << "\033[1;32;31mDeck registration error: no such minion.\033[m" << endl;
-            emit endGame();
-            return;
-        }
-        for(int j = 0;j < i;j++) {
-            if(buf[i] == buf[j]) {
-                cerr << "Card choose fail" << endl;
-                cout << "\033[1;32;31mDeck registration error: duplicated minion.\033[m" << endl;
-                emit endGame();
-                return;
-            }
-        }
-    }
-
-    for(int i = 0;i < 4;i++) {
-        p1_deck[i] = buf[i];
-        p1_todraw[i] = buf[i + 4];
-    }
-    cerr << "Card choose success" << endl;
-    cout << "\033[1;32;32mDeck registration success.\033[m" << endl;
-    p1_cmd.clear();
-    emit playerReady(1);
-}
-
-void Battle::p2_reg()
-{
-    int buf[8];
-    QTextStream sbstream(&p2_cmd);
-
-    if(echoCommand) {
-        cout << p2_cmd.toStdString();
-    }
-    if(p2_cmd.length() != 16) {
-        cout << "\033[1;32;31mDeck registration error: command format error.\033[m" << endl;
-        emit endGame();
-        return;
-    }
-    for(int i = 0;i < 8;++i) {
-        sbstream >> buf[i];
-        if(buf[i] <= 0 || buf[i] > 8) {
-            cout << "\033[1;32;31mDeck registration error: no such minion.\033[m" << endl;
-            emit endGame();
-            return;
-        }
-        for(int j = 0;j < i;j++) {
-            if(buf[i] == buf[j]) {
-                cout << "\033[1;32;31mDeck registration error: duplicated minion.\033[m" << endl;
-                emit endGame();
-                return;
-            }
-        }
-    }
-
-    for(int i = 0;i < 4;i++) {
-        p2_deck[i] = buf[i];
-        p2_todraw[i] = buf[i + 4];
-    }
-    cout << "\033[1;32;32mDeck registration success.\033[m" << endl;
-    p2_cmd.clear();
-    emit playerReady(2);
 }
 
 void Battle::clk()
@@ -476,18 +386,21 @@ void Battle::clk()
     if(countdown == 0)
         emit decideWinLose(0);
     if(!started) {
-        if(p1_cmd.length()) {
-            p1_reg();
+        if(p1->cmd.length()) {
+            p1->reg();
         }
-        if(p2_cmd.length()) {
-            p2_reg();
+        if(p2->cmd.length()) {
+            p2->reg();
+        }
+        if(p1->ready && p2->ready) {
+            startBattle();
         }
         if(cnt++ > 10) { /* register timeout is 1 second */
             cerr << "timeout" << endl;
-            if(!p1_ready) {
+            if(!p1->ready) {
                 cerr << "Card choose fail" << endl;
             }
-            if(!p2_ready) {
+            if(!p2->ready) {
                 //cerr << "Card choose fail" << endl;
             }
             emit endGame();
@@ -504,11 +417,9 @@ void Battle::clk()
             minion["type"] = "orge";
             minion["status"] = QString::number(m->getHpChange());
             minion["move"] = QString::number(m->stat);
-            minion["loc_x"] = QString::number(m->fixed_y);
-            minion["loc_y"] = QString::number(m->fixed_x);
+            minion["loc_x"] = QString::number(m->y);
+            minion["loc_y"] = QString::number(m->x);
             current_minion.append(minion);
-            //debug=============================
-            //new_minion.append(minion);
         }
         else { /* Tower */
             Tower* t = dynamic_cast<Tower*>(*it);
@@ -517,13 +428,13 @@ void Battle::clk()
             name += "_";
             switch(t->SN) {
             case 1:case 4:
-                name += "TOP";
+                name += "top";
                 break;
             case 2:case 5:
-                name += "MIDDLE";
+                name += "main";
                 break;
             case 3: case 6:
-                name += "BOTTOM";
+                name += "down";
                 break;
             }
 
@@ -531,6 +442,76 @@ void Battle::clk()
             tower["status"] = QString::number(t->getHpChange());
             buildings.append(tower);
         }
+    }
+
+    countdown -= 1;
+
+    /* Mana regeneration */
+    if(!(countdown % 10)) {
+        int regen = countdown < 600 ? 2 : 1;
+        if(p1->mana < 10) p1->mana += regen;
+        if(p2->mana < 10) p2->mana += regen;
+    }
+
+    /* summon new minion */
+    if(p1->cmd.length()) {
+        if(echoCommand) {
+            cout << "\033[1;36m" << p1->cmd.toStdString() << "\033[m";
+        }
+        int command, minion_ID, x, y;
+        QTextStream compcmd(&p1->cmd);
+        while(!compcmd.atEnd()) {
+            compcmd >> command;
+            if(command == 0) break;
+            else if(command == 1) {
+                if(!p1_judge) {
+                    cerr << "Interact success" << endl;
+                    p1_judge = true;
+                }
+                compcmd >> minion_ID >> x >> y;
+                if(addMinion(1, minion_ID, x, y) == Battle::SummonSuccess) {
+                    Minion *m = static_cast<Minion*>(UnitList.back());
+                    minion["belong"] = "p1";
+                    minion["name"] = QString::number(m->self_number);
+                    minion["type"] = m->type;
+                    minion["move"] = QString::number(m->stat);
+                    minion["loc_x"] = QString::number(m->y);
+                    minion["loc_y"] = QString::number(m->x);
+                    new_minion.append(minion);
+                }
+            }
+            else {
+                cerr << "Interact fail" << endl;
+                break;
+            }
+        }
+        p1->cmd.clear();
+    }
+    if(p2->cmd.length()) {
+        if(echoCommand) {
+            cout << "\033[1;36m" << p2->cmd.toStdString() << "\033[m";
+        }
+        int command, minion_ID, x, y;
+        QTextStream compcmd(&p2->cmd);
+        while(!compcmd.atEnd()) {
+            compcmd >> command;
+            if(command == 0) break;
+            else if(command == 1) {
+                compcmd >> minion_ID >> x >> y;
+                if(addMinion(2, minion_ID, x, y) == Battle::SummonSuccess) {
+                    Minion *m = static_cast<Minion*>(UnitList.back());
+                    minion["belong"] = "p2";
+                    minion["name"] = QString::number(m->self_number);
+                    minion["type"] = m->type;
+                    minion["move"] = QString::number(m->stat);
+                    minion["loc_x"] = QString::number(m->y * 100);
+                    minion["loc_y"] = QString::number(m->x * 100);
+                    new_minion.append(minion);
+                }
+            }
+            else break;
+        }
+        p2->cmd.clear();
     }
 
     cmd["p1"] = "kevin";
@@ -554,60 +535,8 @@ void Battle::clk()
 
     serverConnection->post(req, QByteArray(msg.toStdString().c_str()));
 
-    /* map info send to render server finished */
     emit signalLogHp();
 
-    countdown -= 1;
-
-    /* Mana regeneration */
-    if(!(countdown % 10)) {
-        int regen = countdown < 600 ? 2 : 1;
-        if(p1_mana < 10) p1_mana += regen;
-        if(p2_mana < 10) p2_mana += regen;
-    }
-
-    /* summon new minion */
-    if(p1_cmd.length()) {
-        if(echoCommand) {
-            cout << "\033[1;36m" << p1_cmd.toStdString() << "\033[m";
-        }
-        int command, minion, x, y;
-        QTextStream compcmd(&p1_cmd);
-        while(!compcmd.atEnd()) {
-            compcmd >> command;
-            if(command == 0) break;
-            else if(command == 1) {
-                if(!p1_judge) {
-                    cerr << "Interact success" << endl;
-                    p1_judge = true;
-                }
-                compcmd >> minion >> x >> y;
-                addMinion(1, minion, x, y);
-            }
-            else {
-                cerr << "Interact fail" << endl;
-                break;
-            }
-        }
-        p1_cmd.clear();
-    }
-    if(p2_cmd.length()) {
-        if(echoCommand) {
-            cout << "\033[1;36m" << p2_cmd.toStdString() << "\033[m";
-        }
-        int command, minion, x, y;
-        QTextStream compcmd(&p2_cmd);
-        while(!compcmd.atEnd()) {
-            compcmd >> command;
-            if(command == 0) break;
-            else if(command == 1) {
-                compcmd >> minion >> x >> y;
-                addMinion(2, minion, x, y);
-            }
-            else break;
-        }
-        p2_cmd.clear();
-    }
     for(auto it = UnitList.begin();it != UnitList.end();++it) {
         if((*it)->getCurrentHp() <= 0) { /* remove dead units first */
             if(Tower *t = dynamic_cast<Tower*>(*it)) {
@@ -641,12 +570,12 @@ void Battle::clk()
     QTextStream p1_toSendst(&p1_toSend);
     QTextStream p2_toSendst(&p2_toSend);
 
-    p1_toSendst << countdown / 10 << ' ' << p1_mana;
-    p2_toSendst << countdown / 10 << ' ' << p2_mana;
+    p1_toSendst << countdown / 10 << ' ' << p1->mana;
+    p2_toSendst << countdown / 10 << ' ' << p2->mana;
 
     for(int i = 0;i < 4;i++) {
-        p1_toSendst << ' ' << p1_deck[i];
-        p2_toSendst << ' ' << p2_deck[i];
+        p1_toSendst << ' ' << p1->deck[i];
+        p2_toSendst << ' ' << p2->deck[i];
     }
     p1_toSendst << '\n';
     p2_toSendst << '\n';
@@ -677,16 +606,6 @@ void Battle::clk()
         for(int i = 0;i < 22;++i) {
             cout << map_hp[i] << endl;
         }
-    }
-}
-
-void Battle::changePlayerState(int player)
-{
-    if(player == 1) p1_ready = true;
-    if(player == 2) p2_ready = true;
-
-    if(p1_ready && p2_ready) {
-        startBattle();
     }
 }
 

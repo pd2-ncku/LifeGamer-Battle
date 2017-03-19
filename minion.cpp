@@ -5,13 +5,44 @@
 
 #include "tower.h"
 
-Minion::Minion(char minion_num, int hp, int cost, float walkSpeed, int atk, int attackRange, int group, int target, Battle *battle, QObject *parent)
-    : Unit(hp, cost, walkSpeed, atk, attackRange, group, target, battle, parent), minion_num(minion_num)
+Minion::Minion(char minion_num, QString type, int hp, int cost, float walkSpeed, int atk, int attackRange, int group, Battle *battle, QObject *parent)
+    : Unit(hp, cost, walkSpeed, atk, attackRange, group, battle, parent),
+      minion_num(minion_num),
+      type(type)
 {
     connect(battle, SIGNAL(signalLogHp()), this, SLOT(setPreviousHpRatio()));
     if(group == 1) stat = StatusStopRight;
     else stat = StatusStopLeft;
+    self_number = Minion::number++;
+    switch(minion_num) {
+    case '1':
+        type = "human_knight";
+        break;
+    case '2':
+        type = "human_priest";
+        break;
+    case '3':
+        type = "human_thief";
+        break;
+    case '4':
+        type = "elf_giant";
+        break;
+    case '5':
+        type = "elf_wisp";
+        break;
+    case '6':
+        type = "elf_archer";
+        break;
+    case '7':
+        type = "undead_samurai";
+        break;
+    case '8':
+        type = "sgram";
+        break;
+    }
 }
+
+int Minion::number = 0;
 
 void Minion::setPoint(int x, int y)
 {

@@ -16,7 +16,7 @@ public:
                   float walkSpeed,
                   int atk,
                   int attackRange,
-                  int group, int target,
+                  int group,
                   Battle *battle,
                   QObject *parent = 0);
 
@@ -46,6 +46,8 @@ public:
     int getHpChange();
 
     int getCost();
+
+    void setTarget(int target);
 
     void onhit(int enemyATK);
 

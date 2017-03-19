@@ -13,10 +13,28 @@ SOURCES += main.cpp \
     battle.cpp \
     unit.cpp \
     tower.cpp \
-    minion.cpp
+    minion.cpp \
+    humanknight.cpp \
+    humanpriest.cpp \
+    humanthief.cpp \
+    elfgiant.cpp \
+    elfwisp.cpp \
+    elfarcher.cpp \
+    undeadsamurai.cpp \
+    sgram.cpp \
+    player.cpp
 
 HEADERS += \
     battle.h \
     unit.h \
     tower.h \
-    minion.h
+    minion.h \
+    humanknight.h \
+    humanpriest.h \
+    humanthief.h \
+    elfgiant.h \
+    elfwisp.h \
+    elfarcher.h \
+    undeadsamurai.h \
+    sgram.h \
+    player.h

@@ -9,6 +9,8 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 
+#include "player.h"
+
 class Unit;
 
 class Battle : public QObject
@@ -43,8 +45,6 @@ signals:
     void quit();
 
 public slots:
-    void readP1();
-    void readP2();
     void p1_error(QProcess::ProcessError error);
     void p2_error(QProcess::ProcessError error);
 
@@ -55,24 +55,13 @@ private:
     QTimer *synchrogazer; /* for map synchronization(Listen to my song~) */
     QLinkedList<Unit*> UnitList;
     bool started;
-    int p1_mana;
-    int p2_mana;
     QNetworkAccessManager* serverConnection;
     bool displayMap;
     bool echoCommand;
     bool judged;
 
-    QProcess *p1;
-    QString p1_cmd;
-    int p1_deck[4];
-    int p1_todraw[4];
-    bool p1_ready;
-
-    QProcess *p2;
-    QString p2_cmd;
-    int p2_deck[4];
-    int p2_todraw[4];
-    bool p2_ready;
+    Player *p1;
+    Player *p2;
 
     int minion_cost[8];
 
@@ -83,12 +72,8 @@ private:
 
     int addMinion(int player, int num, int x, int y);
 
-    void p1_reg();
-    void p2_reg();
-
 private slots:
     void clk(); /* Game clock */
-    void changePlayerState(int player);
     void gameFinished(int SN);
     void postSolve();
 };
