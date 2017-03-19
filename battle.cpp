@@ -27,7 +27,9 @@ Battle::Battle(QObject *parent) : QObject(parent),
     echoCommand(false),
     judged(false),
     p1(new QProcess(this)),
+    p1_ready(false),
     p2(new QProcess(this)),
+    p2_ready(false),
     minion_cost{5, 3, 4, 7, 1, 4, 9, 5}
 {
     synchrogazer->setTimerType(Qt::PreciseTimer);
@@ -468,6 +470,7 @@ void Battle::p2_reg()
 void Battle::clk()
 {
     static bool p1_judge = false;
+    static int cnt = 0;
     if(countdown == 0)
         emit decideWinLose(0);
     if(!started) {
@@ -476,6 +479,16 @@ void Battle::clk()
         }
         if(p2_cmd.length()) {
             p2_reg();
+        }
+        if(cnt++ > 10) { /* register timeout is 1 second */
+            cerr << "timeout" << endl;
+            if(!p1_ready) {
+                cerr << "Card choose fail" << endl;
+            }
+            if(!p2_ready) {
+                //cerr << "Card choose fail" << endl;
+            }
+            emit endGame();
         }
         return;
     }
@@ -603,9 +616,6 @@ void Battle::clk()
 
 void Battle::changePlayerState(int player)
 {
-    static bool p1_ready = false;
-    static bool p2_ready = false;
-
     if(player == 1) p1_ready = true;
     if(player == 2) p2_ready = true;
 
