@@ -5,6 +5,12 @@
 
 ### Changed
 
+## [2.1] - 2017-03-25
+### Added
+
+### Changed
+- fixed minion at X = 10 will go to lower bridge.
+
 ## [2.0] - 2017-03-17
 ### Added
 - Second AI slot(as player 2), you don't have to modify command! We will map your x and y to player 2.

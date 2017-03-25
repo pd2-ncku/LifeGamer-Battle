@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("PD2 proj.1 debugtool");
-    QCoreApplication::setApplicationVersion("v2.0");
+    QCoreApplication::setApplicationVersion("v2.1");
 
     QCommandLineParser parser;
 
