@@ -54,6 +54,23 @@ void Minion::setPoint(int x, int y)
     battle->map_hp[fixed_x][fixed_y] = 'A';
 }
 
+QJsonObject Minion::toJsonObject(bool isNew)
+{
+    QJsonObject minion;
+    minion["belong"] = "p" + QString::number(group);
+    minion["name"] = QString::number(self_number);
+    minion["type"] = type;
+    minion["move"] = QString::number(stat);
+    minion["loc_x"] = QString::number(y);
+    minion["loc_y"] = QString::number(x);
+
+    if(!isNew) {
+        minion["status"] = minion["status"] = QString::number(getHpChange());
+    }
+
+    return minion;
+}
+
 void Minion::active()
 {
     bool inMySight = false;
@@ -92,7 +109,7 @@ void Minion::walk()
 
     /* decide walking target */
     if(group == 1) { /* left side */
-        if(x <= 10) {
+        if(fixed_x <= 10) {
             if(y < 25) { /* upper bridge */
                 target_x = 7;
                 target_y = 25;
@@ -122,7 +139,7 @@ void Minion::walk()
         }
     }
     else { /* group2 */
-        if(x <= 10) {
+        if(fixed_x <= 10) {
             if(y > 26) { /* upper bridge */
                 target_x = 7;
                 target_y = 26;

@@ -10,6 +10,7 @@
 #include <QNetworkRequest>
 
 #include "player.h"
+#include "rendercommunicator.h"
 
 class Unit;
 
@@ -55,7 +56,7 @@ private:
     QTimer *synchrogazer; /* for map synchronization(Listen to my song~) */
     QLinkedList<Unit*> UnitList;
     bool started;
-    QNetworkAccessManager* serverConnection;
+    RenderCommunicator* render;
     bool displayMap;
     bool echoCommand;
     bool judged;

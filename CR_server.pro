@@ -22,7 +22,8 @@ SOURCES += main.cpp \
     elfarcher.cpp \
     undeadsamurai.cpp \
     sgram.cpp \
-    player.cpp
+    player.cpp \
+    rendercommunicator.cpp
 
 HEADERS += \
     battle.h \
@@ -37,4 +38,5 @@ HEADERS += \
     elfarcher.h \
     undeadsamurai.h \
     sgram.h \
-    player.h
+    player.h \
+    rendercommunicator.h

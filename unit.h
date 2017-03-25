@@ -4,6 +4,7 @@
 /* Base class of units(minions/towers) */
 
 #include <QObject>
+#include <QJsonObject>
 
 #include "battle.h"
 
@@ -50,6 +51,8 @@ public:
     void setTarget(int target);
 
     void onhit(int enemyATK);
+
+    virtual QJsonObject toJsonObject(bool isNew = false) = 0;
 
     friend class Minion;
     friend class Tower;

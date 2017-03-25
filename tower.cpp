@@ -17,6 +17,30 @@ void Tower::setPoint(int x, int y)
     this->y = y;
 }
 
+QJsonObject Tower::toJsonObject(bool isNew)
+{
+    QJsonObject tower;
+    QString name("p");
+    name += QString::number(group);
+    name += "_";
+    switch(SN) {
+    case 1:case 4:
+        name += "top";
+        break;
+    case 2:case 5:
+        name += "main";
+        break;
+    case 3: case 6:
+        name += "down";
+        break;
+    }
+
+    tower["name"] = name;
+    tower["status"] = QString::number(getHpChange());
+
+    return tower;
+}
+
 void Tower::active()
 {
     for(Unit* iter : battle->UnitList) {

@@ -10,6 +10,8 @@ public:
 
     void setPoint(int x, int y);
 
+    virtual QJsonObject toJsonObject(bool isNew = false);
+
     friend class Battle;
     friend class Tower;
 

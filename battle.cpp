@@ -30,7 +30,7 @@ Battle::Battle(QObject *parent) : QObject(parent),
     countdown(3*60*10),
     synchrogazer(new QTimer),
     started(false),
-    serverConnection(new QNetworkAccessManager),
+    render(new RenderCommunicator(this)),
     displayMap(false),
     echoCommand(false),
     judged(false),
@@ -40,6 +40,8 @@ Battle::Battle(QObject *parent) : QObject(parent),
 {
     synchrogazer->setTimerType(Qt::PreciseTimer);
     initMap();
+    render->setP1("kevin");
+    render->setP2("eric");
 
     /* ticking signal */
     connect(synchrogazer, SIGNAL(timeout()), this, SLOT(clk()));
@@ -375,6 +377,7 @@ int Battle::addMinion(int player, int num, int x, int y)
             }
         }
         cout << "\033[1;32;32msummon minion " << num << " at " << x << " " << y << " success.\033[m" << endl;
+        render->addNewMinion(newMinion->toJsonObject(true));
         return SummonSuccess;
     }
 }
@@ -407,40 +410,14 @@ void Battle::clk()
         }
         return;
     }
-    QJsonObject cmd, minion, tower;
-    QJsonArray current_minion, new_minion, buildings;
 
     for(auto it = UnitList.begin();it != UnitList.end();++it) {
         if(Minion *m = dynamic_cast<Minion*>(*it)) {
-            minion["belong"] = "p" + QString::number(m->group);
-            minion["name"] = "orge1";
-            minion["type"] = "orge";
-            minion["status"] = QString::number(m->getHpChange());
-            minion["move"] = QString::number(m->stat);
-            minion["loc_x"] = QString::number(m->y);
-            minion["loc_y"] = QString::number(m->x);
-            current_minion.append(minion);
+            render->addCurrentMinion(m->toJsonObject());
         }
-        else { /* Tower */
+        else {
             Tower* t = dynamic_cast<Tower*>(*it);
-            QString name("p");
-            name += QString::number(t->group);
-            name += "_";
-            switch(t->SN) {
-            case 1:case 4:
-                name += "top";
-                break;
-            case 2:case 5:
-                name += "main";
-                break;
-            case 3: case 6:
-                name += "down";
-                break;
-            }
-
-            tower["name"] = name;
-            tower["status"] = QString::number(t->getHpChange());
-            buildings.append(tower);
+            render->addBuilding(t->toJsonObject());
         }
     }
 
@@ -469,16 +446,7 @@ void Battle::clk()
                     p1_judge = true;
                 }
                 compcmd >> minion_ID >> x >> y;
-                if(addMinion(1, minion_ID, x, y) == Battle::SummonSuccess) {
-                    Minion *m = static_cast<Minion*>(UnitList.back());
-                    minion["belong"] = "p1";
-                    minion["name"] = QString::number(m->self_number);
-                    minion["type"] = m->type;
-                    minion["move"] = QString::number(m->stat);
-                    minion["loc_x"] = QString::number(m->y);
-                    minion["loc_y"] = QString::number(m->x);
-                    new_minion.append(minion);
-                }
+                addMinion(1, minion_ID, x, y) == Battle::SummonSuccess;
             }
             else {
                 cerr << "Interact fail" << endl;
@@ -498,43 +466,14 @@ void Battle::clk()
             if(command == 0) break;
             else if(command == 1) {
                 compcmd >> minion_ID >> x >> y;
-                if(addMinion(2, minion_ID, x, y) == Battle::SummonSuccess) {
-                    Minion *m = static_cast<Minion*>(UnitList.back());
-                    minion["belong"] = "p2";
-                    minion["name"] = QString::number(m->self_number);
-                    minion["type"] = m->type;
-                    minion["move"] = QString::number(m->stat);
-                    minion["loc_x"] = QString::number(m->y * 100);
-                    minion["loc_y"] = QString::number(m->x * 100);
-                    new_minion.append(minion);
-                }
+                addMinion(2, minion_ID, x, y) == Battle::SummonSuccess;
             }
             else break;
         }
         p2->cmd.clear();
     }
 
-    cmd["p1"] = "kevin";
-    cmd["p2"] = "eric";
-    cmd["cmd"] = "battle";
-    cmd["current_minion"] = current_minion;
-    cmd["new_minion"] = new_minion;
-    cmd["buildings"] = buildings;
-
-    QString msg(QJsonDocument(cmd).toJson(QJsonDocument::Compact));
-
-    QUrl host("http://localhost:3001/game_cmd");
-    QUrlQuery qry;
-    qry.addQueryItem("p1", "kevin");
-    qry.addQueryItem("p2", "eric");
-    host.setQuery(qry);
-    QNetworkRequest req(host);
-
-    req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    req.setHeader(QNetworkRequest::ContentLengthHeader, msg.length());
-
-    serverConnection->post(req, QByteArray(msg.toStdString().c_str()));
-
+    render->sendMap();
     emit signalLogHp();
 
     for(auto it = UnitList.begin();it != UnitList.end();++it) {
@@ -611,15 +550,18 @@ void Battle::clk()
 
 void Battle::gameFinished(int SN)
 {
+    int winner;
     judged = true;
     synchrogazer->stop();
     if(SN == 2) {
         cerr << "Player 2 win" << endl;
         cout << "You Lose" << endl;
+        winner = 2;
     }
     else if(SN == 5) {
         cerr << "Player 1 win" << endl;
         cout << "You Win" << endl;
+        winner = 1;
     }
     else {
         bool tower[6];
@@ -637,15 +579,18 @@ void Battle::gameFinished(int SN)
         if(!tower[1]) {
             cerr << "Player 2 win" << endl;
             cout << "You Lose" << endl;
+            winner = 2;
         }
         else if(!tower[4]) {
             cerr << "Player 1 win" << endl;
             cout << "You Win" << endl;
+            winner = 1;
         }
         else {
             if(cnt1 > cnt2) {
                 cerr << "Player 1 win" << endl;
                 cout << "You Win" << endl;
+                winner = 1;
             }
             else if(cnt1 == cnt2) {
                 cerr << "Tie" << endl;
@@ -654,9 +599,12 @@ void Battle::gameFinished(int SN)
             else {
                 cerr << "Player 2 win" << endl;
                 cout << "You Lose" << endl;
+                winner = 2;
             }
         }
     }
+
+    render->sendEnd(winner);
     emit endGame();
 }
 
