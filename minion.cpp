@@ -61,7 +61,7 @@ void Minion::walk()
 
     /* decide walking target */
     if(group == 1) { /* left side */
-        if(x <= 10) {
+        if(fixed_x <= 10) {
             if(y < 25) { /* upper bridge */
                 target_x = 7;
                 target_y = 25;
@@ -91,7 +91,7 @@ void Minion::walk()
         }
     }
     else { /* group2 */
-        if(x <= 10) {
+        if(fixed_x <= 10) {
             if(y > 26) { /* upper bridge */
                 target_x = 7;
                 target_y = 26;
