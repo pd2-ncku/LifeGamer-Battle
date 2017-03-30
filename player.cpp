@@ -22,7 +22,7 @@ void Player::reg()
     }
     for(int i = 0;i < 8;++i) {
         sbstream >> buf[i];
-        if(buf[i] <= 0 || buf[i] > 8) {
+        if(buf[i] <= 0 || buf[i] > 9) {
             cerr << "Card choose fail" << endl;
             cout << "\033[1;32;31mDeck registration error: no such minion.\033[m" << endl;
             emit endGame();

@@ -52,7 +52,7 @@ private:
     QString hostAddress;
     int port;
 
-    const QString minion_name[8];
+    const QString minion_name[9];
 };
 
 #endif // RENDERCOMMUNICATOR_H

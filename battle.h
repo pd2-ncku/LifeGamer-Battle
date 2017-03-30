@@ -41,6 +41,7 @@ public:
     friend class ElfArcher;
     friend class ElfGiant;
     friend class ElfWisp;
+    friend class ElfDancer;
     friend class HumanKnight;
     friend class HumanPriest;
     friend class HumanThief;
@@ -73,7 +74,7 @@ private:
     Player *p1;
     Player *p2;
 
-    int minion_cost[8];
+    int minion_cost[9];
 
     void initMap();
     void initTower(int SN);

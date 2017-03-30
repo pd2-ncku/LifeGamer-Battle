@@ -23,6 +23,7 @@ using namespace std;
 #include "elfgiant.h"
 #include "elfwisp.h"
 #include "elfarcher.h"
+#include "elfdancer.h"
 #include "undeadsamurai.h"
 #include "sgram.h"
 
@@ -36,7 +37,7 @@ Battle::Battle(QObject *parent) : QObject(parent),
     judged(false),
     p1(new Player(this)),
     p2(new Player(this)),
-    minion_cost{5, 3, 4, 7, 1, 4, 9, 5}
+    minion_cost{5, 3, 4, 7, 1, 4, 9, 5, 5}
 {
     synchrogazer->setTimerType(Qt::PreciseTimer);
     initMap();
@@ -352,6 +353,9 @@ int Battle::addMinion(int player, int num, int x, int y)
             break;
         case 8:
             newMinion = new Sgram(group, this, this);
+            break;
+        case 9:
+            newMinion = new ElfDancer(group, this, this);
             break;
         }
         newMinion->setPoint(x, y);

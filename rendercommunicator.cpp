@@ -7,7 +7,7 @@ RenderCommunicator::RenderCommunicator(QObject *parent) : QObject(parent),
     renderServer(new QNetworkAccessManager(this)),
     hostAddress("http://localhost"),
     port(3001),
-    minion_name{"human_knight", "human_priest", "human_thief", "elf_giant", "elf_wisp", "elf_archer", "undead_samurai", "sgram"}
+    minion_name{"human_knight", "human_priest", "human_thief", "elf_giant", "elf_wisp", "elf_archer", "undead_samurai", "sgram", "elf_dancer"}
 {
 
 }

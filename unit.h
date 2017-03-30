@@ -61,6 +61,7 @@ public:
     friend class ElfArcher;
     friend class ElfGiant;
     friend class ElfWisp;
+    friend class ElfDancer;
     friend class HumanKnight;
     friend class HumanPriest;
     friend class HumanThief;

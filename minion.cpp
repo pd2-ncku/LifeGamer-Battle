@@ -39,6 +39,9 @@ Minion::Minion(char minion_num, QString type, int hp, int cost, float walkSpeed,
     case '8':
         type = "sgram";
         break;
+    case '9':
+        type = "elf_dancer";
+        break;
     }
 }
 
