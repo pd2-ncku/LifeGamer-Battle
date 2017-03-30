@@ -23,7 +23,8 @@ SOURCES += main.cpp \
     undeadsamurai.cpp \
     sgram.cpp \
     player.cpp \
-    rendercommunicator.cpp
+    rendercommunicator.cpp \
+    elfdancer.cpp
 
 HEADERS += \
     battle.h \
@@ -39,4 +40,5 @@ HEADERS += \
     undeadsamurai.h \
     sgram.h \
     player.h \
-    rendercommunicator.h
+    rendercommunicator.h \
+    elfdancer.h

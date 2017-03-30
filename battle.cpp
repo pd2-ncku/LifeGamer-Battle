@@ -311,7 +311,7 @@ int Battle::addMinion(int player, int num, int x, int y)
         cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: minion not in deck.\033[m" << endl;
         return SummonFailedNotInDeck;
     }
-    else if(num < 1 || num > 8) {
+    else if(num < 1 || num > 9) {
         cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: no such minion.\033[m" << endl;
         return SummonFailedUnknowMinion;
     }
