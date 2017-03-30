@@ -1,6 +1,7 @@
 #include "rendercommunicator.h"
 
-#include <unistd.h>
+#include <QNetworkReply>
+#include <QEventLoop>
 
 RenderCommunicator::RenderCommunicator(QObject *parent) : QObject(parent),
     renderServer(new QNetworkAccessManager(this)),
@@ -103,6 +104,10 @@ void RenderCommunicator::sendEnd(int winner)
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     req.setHeader(QNetworkRequest::ContentLengthHeader, msg.length());
 
-    renderServer->post(req, QByteArray(msg.toStdString().c_str()));
-    sleep(1);
+    QNetworkReply *rep = renderServer->post(req, QByteArray(msg.toStdString().c_str()));
+    QEventLoop loop;
+
+    connect(rep, SIGNAL(finished()), &loop, SLOT(quit()));
+
+    loop.exec();
 }
