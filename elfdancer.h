@@ -10,6 +10,9 @@ public:
     ElfDancer(int group, Battle *battle, QObject *parent);
 
     virtual void active();
+
+private:
+    int cnt;
 };
 
 #endif // ELFDANCER_H
