@@ -365,6 +365,8 @@ int Battle::addMinion(int player, int num, int x, int y)
                     p1->mana -= minion_cost[num - 1];
                 }
             }
+
+            render->setP1Hand(p1->deck);
         }
         if(player == 2) {
             for(int i = 0;i < 4;i++) {
@@ -375,6 +377,8 @@ int Battle::addMinion(int player, int num, int x, int y)
                     p2->mana -= minion_cost[num - 1];
                 }
             }
+
+            render->setP2Hand(p2->deck);
         }
         cout << "\033[1;32;32msummon minion " << num << " at " << x << " " << y << " success.\033[m" << endl;
         render->addNewMinion(newMinion->toJsonObject(true));
@@ -391,9 +395,11 @@ void Battle::clk()
     if(!started) {
         if(p1->cmd.length()) {
             p1->reg();
+            render->setP1Hand(p1->deck);
         }
         if(p2->cmd.length()) {
             p2->reg();
+            render->setP2Hand(p2->deck);
         }
         if(p1->ready && p2->ready) {
             startBattle();

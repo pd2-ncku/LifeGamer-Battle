@@ -6,7 +6,8 @@
 RenderCommunicator::RenderCommunicator(QObject *parent) : QObject(parent),
     renderServer(new QNetworkAccessManager(this)),
     hostAddress("http://localhost"),
-    port(3001)
+    port(3001),
+    minion_name{"human_knight", "human_priest", "human_thief", "elf_giant", "elf_wisp", "elf_archer", "undead_samurai", "sgram"}
 {
 
 }
@@ -19,6 +20,20 @@ void RenderCommunicator::setP1(QString name)
 void RenderCommunicator::setP2(QString name)
 {
     p2 = name;
+}
+
+void RenderCommunicator::setP1Hand(int *hand)
+{
+    for(int i = 0;i < 4;i++) {
+        p1_hand[i] = hand[i];
+    }
+}
+
+void RenderCommunicator::setP2Hand(int *hand)
+{
+    for(int i = 0;i < 4;i++) {
+        p2_hand[i] = hand[i];
+    }
 }
 
 void RenderCommunicator::addCurrentMinion(QJsonObject m)
@@ -45,6 +60,17 @@ void RenderCommunicator::clear()
 
 void RenderCommunicator::sendMap()
 {
+    /* add player hand */
+    QJsonArray h1, h2;
+    QJsonObject card1, card2;
+    for(int i = 0;i < 4;i++) {
+        card1["name"] = minion_name[p1_hand[i] - 1];
+        card2["name"] = minion_name[p2_hand[i] - 1];
+
+        h1.append(card1);
+        h2.append(card2);
+    }
+
     /* pack json command */
     cmd["p1"] = p1;
     cmd["p2"] = p2;
@@ -52,6 +78,8 @@ void RenderCommunicator::sendMap()
     cmd["current_minion"] = current_minion;
     cmd["new_minion"] = new_minion;
     cmd["buildings"] = buildings;
+    cmd["current_hand_p1"] = h1;
+    cmd["current_hand_p2"] = h2;
 
     /* send command */
     QUrl host(hostAddress);

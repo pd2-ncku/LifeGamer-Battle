@@ -21,6 +21,9 @@ public:
     void setP1(QString name);
     void setP2(QString name);
 
+    void setP1Hand(int *hand);
+    void setP2Hand(int *hand);
+
     void addCurrentMinion(QJsonObject m);
     void addNewMinion(QJsonObject m);
     void addBuilding(QJsonObject b);
@@ -37,6 +40,9 @@ private:
     QString p1;
     QString p2;
 
+    int p1_hand[4];
+    int p2_hand[4];
+
     QJsonObject cmd;
     QJsonArray current_minion;
     QJsonArray new_minion;
@@ -45,6 +51,8 @@ private:
     QNetworkAccessManager *renderServer;
     QString hostAddress;
     int port;
+
+    const QString minion_name[8];
 };
 
 #endif // RENDERCOMMUNICATOR_H
