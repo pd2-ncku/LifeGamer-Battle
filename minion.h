@@ -11,12 +11,20 @@ public:
     void setPoint(int x, int y);
 
     virtual QJsonObject toJsonObject(bool isNew = false);
+    virtual void active();
 
     friend class Battle;
     friend class Tower;
 
-public slots:
-    virtual void active();
+    friend class ElfArcher;
+    friend class ElfGiant;
+    friend class ElfWisp;
+    friend class HumanKnight;
+    friend class HumanPriest;
+    friend class HumanThief;
+    friend class Sgram;
+    friend class UndeadSamurai;
+
 
 private:
     float x;

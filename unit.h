@@ -58,6 +58,15 @@ public:
     friend class Tower;
     friend class Battle;
 
+    friend class ElfArcher;
+    friend class ElfGiant;
+    friend class ElfWisp;
+    friend class HumanKnight;
+    friend class HumanPriest;
+    friend class HumanThief;
+    friend class Sgram;
+    friend class UndeadSamurai;
+
 public slots:
     virtual void active(); /* Game clock */
     void setPreviousHpRatio();
