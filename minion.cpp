@@ -83,6 +83,8 @@ void Minion::active()
             }
             else if(temp->group == target && (qPow(temp->x - fixed_x, 2) + qPow(temp->y - fixed_y, 2) < attackRange * attackRange)) {
                 inMySight = true;
+                if(fixed_y - temp->y > 0) stat = StatusAttackLeft;
+                else stat = StatusAttackRight;
                 temp->onhit(atk);
                 break;
             }
@@ -90,13 +92,15 @@ void Minion::active()
         else if(Minion* temp = dynamic_cast<Minion*>(iter)) {
             if(temp->group == target && (qPow(temp->x - fixed_x, 2) + qPow(temp->y - fixed_y, 2) < attackRange * attackRange)) {
                 inMySight = true;
+                if(fixed_y - temp->y > 0) stat = StatusAttackLeft;
+                else stat = StatusAttackRight;
                 temp->onhit(atk);
                 break;
             }
         }
     }
 
-    if(!inMySight) { /* attack */
+    if(!inMySight) { /* not attacking */
         walk();
     }
 }
