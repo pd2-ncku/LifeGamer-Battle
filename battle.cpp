@@ -41,8 +41,6 @@ Battle::Battle(QObject *parent) : QObject(parent),
 {
     synchrogazer->setTimerType(Qt::PreciseTimer);
     initMap();
-    render->setP1("kevin");
-    render->setP2("eric");
 
     /* ticking signal */
     connect(synchrogazer, SIGNAL(timeout()), this, SLOT(clk()));
@@ -107,6 +105,16 @@ void Battle::setMapOutput()
 void Battle::setEchoOutput()
 {
     echoCommand = true;
+}
+
+void Battle::setP1Name(QString name)
+{
+    render->setP1(name);
+}
+
+void Battle::setP2Name(QString name)
+{
+    render->setP2(name);
 }
 
 void Battle::p1_error(QProcess::ProcessError error)

@@ -28,6 +28,16 @@ int main(int argc, char *argv[])
                 QCoreApplication::translate("main", "Echo your command."));
     parser.addOption(echo);
 
+    QCommandLineOption p1_name(QStringList() << "1" << "p1",
+                QCoreApplication::translate("main", "Set player 1 name"),
+                QCoreApplication::translate("main", "player 1 name"));
+    parser.addOption(p1_name);
+
+    QCommandLineOption p2_name(QStringList() << "2" << "p2",
+                QCoreApplication::translate("main", "Set player 2 name"),
+                QCoreApplication::translate("main", "player 2 name"));
+    parser.addOption(p2_name);
+
     parser.addHelpOption();
     parser.addVersionOption();
 
@@ -57,6 +67,18 @@ int main(int argc, char *argv[])
             cerr << "P2 start failed." << endl;
             return 0;
         }
+    }
+
+    QString name1, name2;
+    name1 = parser.value(p1_name);
+    name2 = parser.value(p2_name);
+    if(name1.isEmpty() || name2.isEmpty()) {
+        cerr << parser.helpText().toStdString();
+        return 0;
+    }
+    else {
+        battle.setP1Name(name1);
+        battle.setP2Name(name2);
     }
 
     return app.exec();

@@ -25,6 +25,8 @@ public:
     bool setP2(QString path);
     void setMapOutput();
     void setEchoOutput();
+    void setP1Name(QString name);
+    void setP2Name(QString name);
 
     enum summon_result {
         SummonSuccess,
