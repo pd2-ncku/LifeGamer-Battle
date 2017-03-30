@@ -115,8 +115,11 @@ void RenderCommunicator::sendEnd(int winner)
     if(winner == 1) {
         end_package["winner"] = p1;
     }
-    else {
+    else if(winner == 2){
         end_package["winner"] = p2;
+    }
+    else {
+        end_package["winner"] = "Tie";
     }
 
     host.setPort(port);

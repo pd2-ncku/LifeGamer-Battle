@@ -605,6 +605,7 @@ void Battle::gameFinished(int SN)
             else if(cnt1 == cnt2) {
                 cerr << "Tie" << endl;
                 cout << "Draw" << endl;
+                winner = 3;
             }
             else {
                 cerr << "Player 2 win" << endl;
