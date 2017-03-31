@@ -30,7 +30,7 @@ public:
 
     void clear();
     void sendMap();
-    void sendEnd(int winner);
+    void sendEnd(int winner, int p1_destroy, int p2_destroy);
 
 signals:
 

@@ -571,6 +571,21 @@ void Battle::gameFinished(int SN)
     int winner;
     judged = true;
     synchrogazer->stop();
+
+    /* count for towers */
+    bool tower[6];
+    int cnt1 = 0, cnt2 = 0;
+    for(int i = 0;i < 6;i++) {
+        tower[i] = false;
+    }
+    for(auto it = UnitList.begin();it != UnitList.end();++it) {
+        if(Tower *t = dynamic_cast<Tower*>(*it)) {
+            tower[t->SN - 1] = true;
+            if(t->SN <= 3) cnt1++;
+            else cnt2++;
+        }
+    }
+
     if(SN == 2) {
         cerr << "Player 2 win" << endl;
         cout << "You Lose" << endl;
@@ -582,18 +597,6 @@ void Battle::gameFinished(int SN)
         winner = 1;
     }
     else {
-        bool tower[6];
-        int cnt1 = 0, cnt2 = 0;
-        for(int i = 0;i < 6;i++) {
-            tower[i] = false;
-        }
-        for(auto it = UnitList.begin();it != UnitList.end();++it) {
-            if(Tower *t = dynamic_cast<Tower*>(*it)) {
-                tower[t->SN - 1] = true;
-                if(t->SN <= 3) cnt1++;
-                else cnt2++;
-            }
-        }
         if(!tower[1]) {
             cerr << "Player 2 win" << endl;
             cout << "You Lose" << endl;
@@ -623,7 +626,7 @@ void Battle::gameFinished(int SN)
         }
     }
 
-    render->sendEnd(winner);
+    render->sendEnd(winner, 3 - cnt2, 3 - cnt1);
     emit endGame();
 }
 

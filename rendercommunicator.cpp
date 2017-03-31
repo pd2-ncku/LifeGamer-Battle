@@ -103,7 +103,7 @@ void RenderCommunicator::sendMap()
     clear();
 }
 
-void RenderCommunicator::sendEnd(int winner)
+void RenderCommunicator::sendEnd(int winner, int p1_destroy, int p2_destroy)
 {
     QUrl host(hostAddress);
     QUrlQuery qry;
@@ -121,6 +121,9 @@ void RenderCommunicator::sendEnd(int winner)
     else {
         end_package["winner"] = "Tie";
     }
+
+    end_package["p1_destroy"] = QString::number(p1_destroy);
+    end_package["p2_destroy"] = QString::number(p2_destroy);
 
     host.setPort(port);
     host.setPath("/game_end");
