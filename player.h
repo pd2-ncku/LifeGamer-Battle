@@ -21,6 +21,7 @@ public:
     QString cmd;
 
     void reg();
+    void addMana(int amount);
 
 signals:
     void endGame();

@@ -444,8 +444,8 @@ void Battle::clk()
     /* Mana regeneration */
     if(!(countdown % 10)) {
         int regen = countdown < 600 ? 2 : 1;
-        if(p1->mana < 10) p1->mana += regen;
-        if(p2->mana < 10) p2->mana += regen;
+        p1->addMana(regen);
+        p2->addMana(regen);
     }
 
     /* summon new minion */

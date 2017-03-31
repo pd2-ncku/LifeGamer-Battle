@@ -10,8 +10,8 @@ void ElfDancer::active()
 {
     cnt++;
     if(!(cnt % 10)) {
-        if(group == 1) battle->p1->mana++;
-        else battle->p2->mana++;
+        if(group == 1) battle->p1->addMana(1);
+        else battle->p2->addMana(1);
         hp -= 100;
     }
 

@@ -48,6 +48,12 @@ void Player::reg()
     ready = true;
 }
 
+void Player::addMana(int amount)
+{
+    mana += amount;
+    if(mana > 10) mana = 10;
+}
+
 void Player::readCommand()
 {
     cmd += readAllStandardOutput();
