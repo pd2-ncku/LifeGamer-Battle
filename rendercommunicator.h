@@ -29,7 +29,7 @@ public:
     void addBuilding(QJsonObject b);
 
     void clear();
-    void sendMap();
+    void sendMap(int time, int p1_mana, int p2_mana);
     void sendEnd(int winner, int p1_destroy, int p2_destroy);
 
 signals:

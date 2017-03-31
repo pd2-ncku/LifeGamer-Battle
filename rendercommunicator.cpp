@@ -58,7 +58,7 @@ void RenderCommunicator::clear()
     while(!buildings.empty()) buildings.pop_back();
 }
 
-void RenderCommunicator::sendMap()
+void RenderCommunicator::sendMap(int time, int p1_mana, int p2_mana)
 {
     /* add player hand */
     QJsonArray h1, h2;
@@ -80,6 +80,9 @@ void RenderCommunicator::sendMap()
     cmd["buildings"] = buildings;
     cmd["current_hand_p1"] = h1;
     cmd["current_hand_p2"] = h2;
+    cmd["current_time"] = QString::number(time);
+    cmd["current_mana_p1"] = QString::number(p1_mana);
+    cmd["current_mana_p2"] = QString::number(p2_mana);
 
     /* send command */
     QUrl host(hostAddress);

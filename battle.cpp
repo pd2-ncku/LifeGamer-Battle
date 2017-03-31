@@ -491,7 +491,7 @@ void Battle::clk()
         p2->cmd.clear();
     }
 
-    render->sendMap();
+    render->sendMap(countdown / 10, p1->mana, p2->mana);
     emit signalLogHp();
 
     for(auto it = UnitList.begin();it != UnitList.end();++it) {
