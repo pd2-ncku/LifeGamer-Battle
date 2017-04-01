@@ -25,6 +25,8 @@ public:
     friend class HumanThief;
     friend class Sgram;
     friend class UndeadSamurai;
+    // Add Rifleman
+    friend class HumanRifleman;
 
 
 private:

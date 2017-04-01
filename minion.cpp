@@ -42,6 +42,10 @@ Minion::Minion(char minion_num, QString type, int hp, int cost, float walkSpeed,
     case '9':
         type = "elf_dancer";
         break;
+    // Add Rifleman
+    case 'C':
+        type = "human_rifleman";
+        break;
     }
 }
 
