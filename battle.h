@@ -78,7 +78,7 @@ private:
     Player *p1;
     Player *p2;
 
-    int minion_cost[9];
+    int minion_cost[24];
 
     void initMap();
     void initTower(int SN);

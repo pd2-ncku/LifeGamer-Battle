@@ -38,7 +38,8 @@ Battle::Battle(QObject *parent) : QObject(parent),
     judged(false),
     p1(new Player(this)),
     p2(new Player(this)),
-    minion_cost{5, 3, 4, 7, 1, 4, 9, 5, 5}
+    minion_cost{5, 3, 4, 7, 1, 4, 9, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0}
+             /* 1, 2, 3, 4, 5, 6, 7, 8, 9, :, ;, <, =, >, ?, @, A, B, C, D, E, F, G, H */
 {
     synchrogazer->setTimerType(Qt::PreciseTimer);
     initMap();
@@ -320,7 +321,7 @@ int Battle::addMinion(int player, int num, int x, int y)
         cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: minion not in deck.\033[m" << endl;
         return SummonFailedNotInDeck;
     }
-    else if(num < 1 || num > 9) {
+    else if(num < 1 || !minion_cost[num - 1]) {
         cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: no such minion.\033[m" << endl;
         return SummonFailedUnknowMinion;
     }
@@ -338,37 +339,37 @@ int Battle::addMinion(int player, int num, int x, int y)
     }
     else {
         Minion *newMinion;
-        switch(num) {
-        case 1:
+        switch(num + '0') {
+        case '1':
             newMinion = new HumanKnight(group, this, this);
             break;
-        case 2:
+        case '2':
             newMinion = new HumanPriest(group, this, this);
             break;
-        case 3:
+        case '3':
             newMinion = new HumanThief(group, this, this);
             break;
-        case 4:
+        case '4':
             newMinion = new ElfGiant(group, this, this);
             break;
-        case 5:
+        case '5':
             newMinion = new ElfWisp(group, this, this);
             break;
-        case 6:
+        case '6':
             newMinion = new ElfArcher(group, this, this);
             break;
-        case 7:
+        case '7':
             newMinion = new UndeadSamurai(group, this, this);
             break;
-        case 8:
+        case '8':
             newMinion = new Sgram(group, this, this);
             break;
-        case 9:
+        case '9':
             newMinion = new ElfDancer(group, this, this);
             break;
-        // Add Rifleman
         case 'C':
             newMinion = new HumanRifleman(group, this, this);
+            break;
         }
         newMinion->setPoint(x, y);
         UnitList.append(static_cast<Unit*>(newMinion));
@@ -457,6 +458,7 @@ void Battle::clk()
         if(echoCommand) {
             cout << "\033[1;36m" << p1->cmd.toStdString() << "\033[m";
         }
+        char tmp, trash;
         int command, minion_ID, x, y;
         QTextStream compcmd(&p1->cmd);
         while(!compcmd.atEnd()) {
@@ -467,7 +469,8 @@ void Battle::clk()
                     cerr << "Interact success" << endl;
                     p1_judge = true;
                 }
-                compcmd >> minion_ID >> x >> y;
+                compcmd >> trash >> tmp >> x >> y;
+                minion_ID = tmp - '0';
                 addMinion(1, minion_ID, x, y) == Battle::SummonSuccess;
             }
             else {

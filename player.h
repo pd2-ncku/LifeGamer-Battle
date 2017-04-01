@@ -28,6 +28,9 @@ signals:
 
 private slots:
     void readCommand();
+
+private:
+    char enabled[25];
 };
 
 #endif // PLAYER_H

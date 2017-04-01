@@ -1,6 +1,6 @@
 #include "player.h"
 
-Player::Player(QObject *parent):QProcess(parent), mana(5), ready(false)
+Player::Player(QObject *parent):QProcess(parent), mana(5), ready(false), enabled("111111111000000000100000")
 {
     cmd.clear();
     connect(this, SIGNAL(readyReadStandardOutput()), this, SLOT(readCommand()));
@@ -8,6 +8,7 @@ Player::Player(QObject *parent):QProcess(parent), mana(5), ready(false)
 
 void Player::reg()
 {
+    char tmp = ' ';
     int buf[8];
     QTextStream sbstream(&cmd);
 
@@ -21,8 +22,16 @@ void Player::reg()
         return;
     }
     for(int i = 0;i < 8;++i) {
-        sbstream >> buf[i];
-        if(buf[i] <= 0 || buf[i] > 9) {
+
+        /* get next minion */
+        do {
+            sbstream >> tmp;
+        } while(tmp == ' ');
+
+        /* char to int */
+        buf[i] = tmp - '0';
+
+        if(buf[i] < 1 || enabled[buf[i] - 1] != '1') {
             cerr << "Card choose fail" << endl;
             cout << "\033[1;32;31mDeck registration error: no such minion.\033[m" << endl;
             emit endGame();
