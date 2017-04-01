@@ -20,6 +20,7 @@ using namespace std;
 #include "humanknight.h"
 #include "humanpriest.h"
 #include "humanthief.h"
+#include "humanrifleman.h" // Add Rifleman
 #include "elfgiant.h"
 #include "elfwisp.h"
 #include "elfarcher.h"
@@ -365,6 +366,9 @@ int Battle::addMinion(int player, int num, int x, int y)
         case 9:
             newMinion = new ElfDancer(group, this, this);
             break;
+        // Add Rifleman
+        case 'C':
+            newMinion = new HumanRifleman(group, this, this);
         }
         newMinion->setPoint(x, y);
         UnitList.append(static_cast<Unit*>(newMinion));

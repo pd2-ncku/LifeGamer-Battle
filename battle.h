@@ -49,6 +49,8 @@ public:
     friend class HumanThief;
     friend class Sgram;
     friend class UndeadSamurai;
+    // Add rifleman
+    friend class HumanRifleman;
 
 signals:
     void signalLogHp();

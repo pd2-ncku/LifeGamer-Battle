@@ -24,7 +24,8 @@ SOURCES += main.cpp \
     sgram.cpp \
     player.cpp \
     rendercommunicator.cpp \
-    elfdancer.cpp
+    elfdancer.cpp \
+    humanrifleman.cpp
 
 HEADERS += \
     battle.h \
@@ -41,4 +42,5 @@ HEADERS += \
     sgram.h \
     player.h \
     rendercommunicator.h \
-    elfdancer.h
+    elfdancer.h \
+    humanrifleman.h
