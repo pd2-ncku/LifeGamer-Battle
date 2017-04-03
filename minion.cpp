@@ -136,7 +136,7 @@ void Minion::walk()
         }
         else {
             if(y < 25) { /* lower bridge */
-                target_x = 14;
+                target_x = 16;
                 target_y = 25;
             }
             else if(battle->map[15][41] == '#') { /* lower tower */
@@ -166,7 +166,7 @@ void Minion::walk()
         }
         else {
             if(y > 26) { /* lower bridge */
-                target_x = 14;
+                target_x = 16;
                 target_y = 26;
             }
             else if(battle->map[15][10] == '#') { /* lower tower */
