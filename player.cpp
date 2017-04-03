@@ -1,7 +1,10 @@
 #include "player.h"
 
-Player::Player(QObject *parent):QProcess(parent), mana(5), ready(false), enabled("111111111000000000100000")
+#include <cstring>
+
+Player::Player(QObject *parent):QProcess(parent), mana(5), ready(false)
 {
+    strcpy(enabled, "111111111000000000100000");
     cmd.clear();
     connect(this, SIGNAL(readyReadStandardOutput()), this, SLOT(readCommand()));
 }
