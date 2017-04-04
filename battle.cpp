@@ -471,7 +471,7 @@ void Battle::clk()
                 }
                 compcmd >> trash >> tmp >> x >> y;
                 minion_ID = tmp - '0';
-                addMinion(1, minion_ID, x, y) == Battle::SummonSuccess;
+                addMinion(1, minion_ID, x, y);
             }
             else {
                 cerr << "Interact fail" << endl;
@@ -484,14 +484,16 @@ void Battle::clk()
         if(echoCommand) {
             cout << "\033[1;36m" << p2->cmd.toStdString() << "\033[m";
         }
+        char tmp, trash;
         int command, minion_ID, x, y;
         QTextStream compcmd(&p2->cmd);
         while(!compcmd.atEnd()) {
             compcmd >> command;
             if(command == 0) break;
             else if(command == 1) {
-                compcmd >> minion_ID >> x >> y;
-                addMinion(2, minion_ID, x, y) == Battle::SummonSuccess;
+                compcmd >> trash >> tmp >> x >> y;
+                minion_ID = tmp - '0';
+                addMinion(2, minion_ID, x, y);
             }
             else break;
         }
