@@ -78,6 +78,9 @@ bool Battle::setP1(QString path)
     cout << "Starting your program..." << endl;
     if(!p1->waitForStarted(1000)) {
         cout << "\033[1;32;31mError: cannot start your program!\033[m" << endl;
+        judged = true;
+        cerr << "Player 1 fault" << endl;
+        cerr << "Player 2 win" << endl;
         return false;
     }
     else {
@@ -92,6 +95,9 @@ bool Battle::setP2(QString path)
 
     if(!p2->waitForStarted(1000)) {
         cout << "\033[1;32;31mError: cannot start your program!\033[m" << endl;
+        judged = true;
+        cerr << "Player 2 fault" << endl;
+        cerr << "Player 1 win" << endl;
         return false;
     }
     else {
@@ -425,9 +431,15 @@ void Battle::clk()
             cerr << "timeout" << endl;
             if(!p1->ready) {
                 cerr << "Card choose fail" << endl;
+                judged = true;
+                cerr << "Player 1 fault" << endl;
+                cerr << "Player 2 win" << endl;
             }
             if(!p2->ready) {
                 //cerr << "Card choose fail" << endl;
+                judged = true;
+                cerr << "Player 2 fault" << endl;
+                cerr << "Player 1 win" << endl;
             }
             emit endGame();
         }

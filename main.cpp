@@ -11,8 +11,8 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("PD2 proj.1 debugtool");
-    QCoreApplication::setApplicationVersion("v1.0");
+    QCoreApplication::setApplicationName("PD2 proj.1 battle server");
+    QCoreApplication::setApplicationVersion("v2.4");
 
     QCommandLineParser parser;
 
