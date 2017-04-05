@@ -9,7 +9,7 @@ Player::Player(QObject *parent):QProcess(parent), mana(5), ready(false)
     connect(this, SIGNAL(readyReadStandardOutput()), this, SLOT(readCommand()));
 }
 
-void Player::reg()
+bool Player::reg()
 {
     char tmp = ' ';
     int buf[8];
@@ -21,8 +21,8 @@ void Player::reg()
     if(cmd.length() != 16) {
         cerr << "Card choose fail" << endl;
         cout << "\033[1;32;31mDeck registration error: command format error.\033[m" << endl;
-        emit endGame();
-        return;
+        //emit endGame();
+        return false;
     }
     for(int i = 0;i < 8;++i) {
 
@@ -37,15 +37,15 @@ void Player::reg()
         if(buf[i] < 1 || enabled[buf[i] - 1] != '1') {
             cerr << "Card choose fail" << endl;
             cout << "\033[1;32;31mDeck registration error: no such minion.\033[m" << endl;
-            emit endGame();
-            return;
+            //emit endGame();
+            return false;
         }
         for(int j = 0;j < i;j++) {
             if(buf[i] == buf[j]) {
                 cerr << "Card choose fail" << endl;
                 cout << "\033[1;32;31mDeck registration error: duplicated minion.\033[m" << endl;
-                emit endGame();
-                return;
+                //emit endGame();
+                return false;
             }
         }
     }
@@ -58,6 +58,8 @@ void Player::reg()
     cout << "\033[1;32;32mDeck registration success.\033[m" << endl;
     cmd.clear();
     ready = true;
+
+    return true;
 }
 
 void Player::addMana(int amount)

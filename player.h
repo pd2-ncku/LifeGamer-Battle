@@ -20,7 +20,7 @@ public:
     bool ready;
     QString cmd;
 
-    void reg();
+    bool reg();
     void addMana(int amount);
 
 signals:

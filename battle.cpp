@@ -53,10 +53,10 @@ Battle::Battle(QObject *parent) : QObject(parent),
 
     /* player signals */
     connect(p1, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(p1_error(QProcess::ProcessError)));
-    connect(p1, SIGNAL(endGame()), this, SLOT(postSolve()));
+    //connect(p1, SIGNAL(endGame()), this, SLOT(postSolve()));
 
     connect(p2, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(p2_error(QProcess::ProcessError)));
-    connect(p2, SIGNAL(endGame()), this, SLOT(postSolve()));
+    //connect(p2, SIGNAL(endGame()), this, SLOT(postSolve()));
 
     synchrogazer->start(100);
 }
@@ -417,12 +417,24 @@ void Battle::clk()
         emit decideWinLose(0);
     if(!started) {
         if(p1->cmd.length()) {
-            p1->reg();
-            render->setP1Hand(p1->deck);
+            if(p1->reg()) {
+                render->setP1Hand(p1->deck);
+            }
+            else {
+                judged = true;
+                cerr << "Player 1 fault" << endl;
+                cerr << "Player 2 win" << endl;
+            }
         }
         if(p2->cmd.length()) {
-            p2->reg();
-            render->setP2Hand(p2->deck);
+            if(p2->reg()) {
+                render->setP2Hand(p2->deck);
+            }
+            else {
+                judged = true;
+                cerr << "Player 2 fault" << endl;
+                cerr << "Player 1 win" << endl;
+            }
         }
         if(p1->ready && p2->ready) {
             startBattle();
