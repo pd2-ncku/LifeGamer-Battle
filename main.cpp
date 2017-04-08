@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("PD2 proj.1 battle server");
-    QCoreApplication::setApplicationVersion("v2.4");
+    QCoreApplication::setApplicationVersion("v2.5");
 
     QCommandLineParser parser;
 

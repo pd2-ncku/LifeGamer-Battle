@@ -54,7 +54,7 @@ void Unit::onhit(int enemyATK)
     hp -= enemyATK;
 
     /* friend healer will not to overheal */
-    if(hp > MaxHp) hp = MaxHp;
+    if(hp >= MaxHp) hp = MaxHp;
 }
 
 void Unit::active()
