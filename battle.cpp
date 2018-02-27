@@ -192,25 +192,25 @@ void Battle::initMap()
 
 void Battle::initTower(int SN)
 {
-    int x, y, size, group, target, p_x, p_y, atk, hp; /* p_x p_y is for attack detection */
+    int x, y, size, group, target, p_x, p_y, atk, attackRange, attackDelay, hp; /* p_x p_y is for attack detection */
     switch(SN) { /* 123:group1, 456:group2, 2 and 5 are large tower */
     case 1:
-        x = 3;y = 7;size = 4;group = 1;p_x = 5;p_y = 10;hp = 4000;atk = 200;
+        x = 3;y = 7;size = 4;group = 1;p_x = 5;p_y = 10;hp = 4000;atk = 200;attackRange=6;attackDelay = 9;
         break;
     case 2:
-        x = 8;y = 3;size = 6;group = 1;p_x = 10;p_y = 8;hp = 5000;atk = 250;
+        x = 8;y = 3;size = 6;group = 1;p_x = 10;p_y = 8;hp = 5000;atk = 300;attackRange=7;attackDelay = 12;
         break;
     case 3:
-        x = 15;y = 7;size = 4;group = 1;p_x = 16;p_y = 10;hp = 4000;atk = 200;
+        x = 15;y = 7;size = 4;group = 1;p_x = 16;p_y = 10;hp = 4000;atk = 200;attackRange=6;attackDelay = 9;
         break;
     case 4:
-        x = 3;y = 41;size = 4;group = 2;p_x = 5;p_y = 41;hp = 4000;atk = 200;
+        x = 3;y = 41;size = 4;group = 2;p_x = 5;p_y = 41;hp = 4000;atk = 200;attackRange=6;attackDelay = 9;
         break;
     case 5:
-        x = 8;y = 43;size = 6;group = 2;p_x = 11;p_y = 43;hp = 5000;atk = 250;
+        x = 8;y = 43;size = 6;group = 2;p_x = 11;p_y = 43;hp = 5000;atk = 300;attackRange=7;attackDelay = 12;
         break;
     case 6:
-        x = 15;y = 41;size = 4;group = 2;p_x = 16;p_y = 41;hp = 4000;atk = 200;
+        x = 15;y = 41;size = 4;group = 2;p_x = 16;p_y = 41;hp = 4000;atk = 200;attackRange=6;attackDelay = 9;
         break;
     }
     if(group == 1) target = 2;
@@ -224,7 +224,7 @@ void Battle::initTower(int SN)
     }
 
     Tower *newTower;
-    newTower = new Tower(hp, atk, 5, group, target, this, this);
+    newTower = new Tower(hp, atk, attackRange, attackDelay, group, target, this, this);
     newTower->setPoint(p_x, p_y);
     newTower->SN = SN;
     UnitList.append(static_cast<Unit*>(newTower));

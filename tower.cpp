@@ -5,8 +5,8 @@
 #include <QtMath>
 #include <QDebug>
 
-Tower::Tower(int hp, int atk, int attackRange, int group, int target, Battle *battle, QObject *parent)
-    : Unit(hp, 0, 0, atk, attackRange, 9, group, battle, parent)
+Tower::Tower(int hp, int atk, int attackRange, int attackDelay, int group, int target, Battle *battle, QObject *parent)
+    : Unit(hp, 0, 0, atk, attackRange, attackDelay, group, battle, parent)
 {
     connect(battle, SIGNAL(signalLogHp()), this, SLOT(setPreviousHpRatio()));
     if(group == 1) setTarget(2);
