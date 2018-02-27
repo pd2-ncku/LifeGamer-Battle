@@ -36,24 +36,3 @@ void Sgram::active()
         walk();
     }
 }
-/*
-    bool inMySight = false;
-
-    // search for target
-    for(Unit* iter : battle->UnitList) {
-        if(Tower* temp = dynamic_cast<Tower*>(iter)) {
-            if(temp->group == target && (qPow(temp->x - fixed_x, 2) + qPow(temp->y - fixed_y, 2) < attackRange * attackRange)) {
-                inMySight = true;
-                if(fixed_y - temp->y > 0) stat = StatusAttackLeft;
-                else stat = StatusAttackRight;
-                temp->onhit(atk);
-                break;
-            }
-        }
-    }
-
-    if(!inMySight) { // not attacking
-        walk();
-    }
-}
-*/

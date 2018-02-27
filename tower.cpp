@@ -63,34 +63,3 @@ void Tower::active()
         if(attackCnt == (attackDelay/2)) Target->onhit(atk);
     }
 }
-/*
-    bool attack = false;
-    for(Unit* iter : battle->UnitList) {
-        if(Minion* temp = dynamic_cast<Minion*>(iter)) {
-            if(temp->group != group) {
-                if(temp->fixed_y <= 23 && temp->group == 2) {
-                    if((SN == 1 || SN == 2) && temp->fixed_x <= 10) {
-                        attack = true;
-                    }
-                    else if((SN == 3 || SN == 2) && temp->fixed_x > 10) {
-                        attack = true;
-                    }
-                }
-                else if(temp->fixed_y >= 28 && temp->group == 1) {
-                    if((SN == 4 || SN == 5) && temp->fixed_x <= 10) {
-                        attack = true;
-                    }
-                    else if((SN == 6 || SN == 5) && temp->fixed_x > 10) {
-                        attack = true;
-                    }
-                }
-
-                if(attack) {
-                    temp->onhit(atk);
-                    break;
-                }
-            }
-        }
-    }
-}
-*/
