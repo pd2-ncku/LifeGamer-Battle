@@ -1,6 +1,6 @@
 #include "unit.h"
 
-Unit::Unit(int hp, int cost, float walkSpeed, int atk, int attackRange, int group, Battle *battle, QObject *parent)
+Unit::Unit(int hp, int cost, float walkSpeed, int atk, int attackRange, int attackDelay, int group, Battle *battle, QObject *parent)
     : QObject(parent),
       MaxHp(hp),
       hp(hp),
@@ -8,6 +8,7 @@ Unit::Unit(int hp, int cost, float walkSpeed, int atk, int attackRange, int grou
       walkSpeed(walkSpeed),
       atk(atk),
       attackRange(attackRange),
+      attackDelay(attackDelay),
       group(group),
       battle(battle)
 {

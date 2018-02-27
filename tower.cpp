@@ -2,13 +2,15 @@
 
 #include "minion.h"
 
+#include <QtMath>
 #include <QDebug>
 
 Tower::Tower(int hp, int atk, int attackRange, int group, int target, Battle *battle, QObject *parent)
-    : Unit(hp, 0, 0, atk, attackRange, group, battle, parent)
+    : Unit(hp, 0, 0, atk, attackRange, 9, group, battle, parent)
 {
     connect(battle, SIGNAL(signalLogHp()), this, SLOT(setPreviousHpRatio()));
-    this->target = target;
+    if(group == 1) setTarget(2);
+    else setTarget(1);
 }
 
 void Tower::setPoint(int x, int y)
@@ -43,6 +45,25 @@ QJsonObject Tower::toJsonObject(bool isNew)
 
 void Tower::active()
 {
+    Minion* Target = NULL;
+
+    if(attackCnt) --attackCnt;
+    /* search for nearest target */
+    for(Unit* iter : battle->UnitList) {
+        if(Minion* temp = dynamic_cast<Minion*>(iter)){
+            if(
+                            temp->group == target &&
+                            (Target == NULL || hypot(temp->x - x , temp->y - y) < hypot(Target->x - x , Target->y - y))){
+                Target = temp;
+            }
+        }
+    }
+    if(Target && hypot(Target->x - x , Target->y - y) < attackRange){
+        if(!attackCnt) attackCnt = attackDelay;
+        if(attackCnt == (attackDelay/2)) Target->onhit(atk);
+    }
+}
+/*
     bool attack = false;
     for(Unit* iter : battle->UnitList) {
         if(Minion* temp = dynamic_cast<Minion*>(iter)) {
@@ -72,3 +93,4 @@ void Tower::active()
         }
     }
 }
+*/

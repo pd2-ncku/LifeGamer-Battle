@@ -3,16 +3,16 @@
 #include <QtMath>
 
 ElfWisp::ElfWisp(int group, Battle *battle, QObject *parent)
-    : Minion('5', "elf_wisp", 300, 1, 0.3f, -1, 4, group, battle, parent)
+    : Minion('5', "elf_wisp", 250, 1, 0.3f, -5, 4, 3, group, battle, parent)
 {
     setTarget(group);
 }
-
+/*
 void ElfWisp::active()
 {
     bool inMySight = false;
 
-    /* search for target */
+    // search for target
     for(Unit* iter : battle->UnitList) {
         if(Minion* temp = dynamic_cast<Minion*>(iter)) {
             if(temp->self_number != self_number
@@ -27,7 +27,8 @@ void ElfWisp::active()
         }
     }
 
-    if(!inMySight) { /* not attacking */
+    if(!inMySight) {
         walk();
     }
 }
+*/

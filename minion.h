@@ -6,7 +6,7 @@
 class Minion : public Unit
 {
 public:
-    Minion(char minion_num, QString type, int hp, int cost, float walkSpeed, int atk, int attackRange, int group, Battle *battle, QObject *parent);
+    Minion(char minion_num, QString type, int hp, int cost, float walkSpeed, int atk, int attackRange, int attackDelay, int group, Battle *battle, QObject *parent);
 
     void setPoint(int x, int y);
 
@@ -30,8 +30,6 @@ public:
 
 
 private:
-    float x;
-    float y;
     int fixed_x;
     int fixed_y;
     char minion_num;

@@ -9,7 +9,7 @@ class ElfWisp : public Minion
 public:
     ElfWisp(int group, Battle *battle, QObject *parent);
 
-    virtual void active();
+    //virtual void active();
 };
 
 #endif // ELFWISP_H

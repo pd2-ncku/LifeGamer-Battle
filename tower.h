@@ -12,8 +12,6 @@ public:
     void setPoint(int x, int y);
     virtual QJsonObject toJsonObject(bool isNew = false);
 
-    int x;
-    int y;
     int SN;
 
 public slots:
