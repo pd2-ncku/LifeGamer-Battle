@@ -5,8 +5,8 @@
 
 #include "tower.h"
 
-Minion::Minion(char minion_num, QString type, int hp, int cost, float walkSpeed, int atk, int attackRange, int group, Battle *battle, QObject *parent)
-    : Unit(hp, cost, walkSpeed, atk, attackRange, group, battle, parent),
+Minion::Minion(char minion_num, QString type, int hp, int cost, float walkSpeed, int atk, int attackRange, int attackDelay, int group, Battle *battle, QObject *parent)
+    : Unit(hp, cost, walkSpeed, atk, attackRange, attackDelay, group, battle, parent),
       minion_num(minion_num),
       type(type)
 {
@@ -80,34 +80,32 @@ QJsonObject Minion::toJsonObject(bool isNew)
 
 void Minion::active()
 {
-    bool inMySight = false;
+    Unit* Target = NULL;
 
-    /* search for target */
+    if(attackCnt) --attackCnt;
+    /* search for nearest target */
     for(Unit* iter : battle->UnitList) {
-        if(Tower* temp = dynamic_cast<Tower*>(iter)) {
-            if(atk < 0 && temp->group == group) {
-                break;
+        if(iter->group == target && (!Target || hypot(iter->x - fixed_x , iter->y - fixed_y) < hypot(Target->x - fixed_x , Target->y - fixed_y))){
+            if(Tower* temp = dynamic_cast<Tower*>(iter)) {
+                if( atk > 0 ) Target = temp;
             }
-            else if(temp->group == target && (qPow(temp->x - fixed_x, 2) + qPow(temp->y - fixed_y, 2) < attackRange * attackRange)) {
-                inMySight = true;
-                if(fixed_y - temp->y > 0) stat = StatusAttackLeft;
-                else stat = StatusAttackRight;
-                temp->onhit(atk);
-                break;
-            }
-        }
-        else if(Minion* temp = dynamic_cast<Minion*>(iter)) {
-            if(temp->group == target && (qPow(temp->x - fixed_x, 2) + qPow(temp->y - fixed_y, 2) < attackRange * attackRange)) {
-                inMySight = true;
-                if(fixed_y - temp->y > 0) stat = StatusAttackLeft;
-                else stat = StatusAttackRight;
-                temp->onhit(atk);
-                break;
+            else if(Minion* temp = dynamic_cast<Minion*>(iter)) {
+                if(atk > 0 || temp->hp < temp->MaxHp) Target = temp;
             }
         }
     }
-
-    if(!inMySight) { /* not attacking */
+    if(Target && hypot(Target->x - fixed_x , Target->y - fixed_y) < attackRange){
+        if(!attackCnt) attackCnt = attackDelay;
+        if((attackCnt < (attackDelay/2+5)) && (attackCnt > (attackDelay/2))){
+            if(fixed_y - Target->y > 0) stat = StatusAttackLeft;
+            else stat = StatusAttackRight;
+        }
+        else{
+            if(fixed_y - Target->y > 0) stat = StatusStopLeft;
+            else stat = StatusStopRight;
+        }
+        if(attackCnt == (attackDelay/2)) Target->onhit(atk);
+    } else { /* not attacking */
         walk();
     }
 }

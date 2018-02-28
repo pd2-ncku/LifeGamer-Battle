@@ -9,7 +9,6 @@ class HumanPriest : public Minion
 public:
     HumanPriest(int group, Battle *battle, QObject *parent);
 
-    virtual void active();
 };
 
 #endif // HUMANPRIEST_H

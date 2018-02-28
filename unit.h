@@ -17,6 +17,7 @@ public:
                   float walkSpeed,
                   int atk,
                   int attackRange,
+                  int attackDelay,
                   int group,
                   Battle *battle,
                   QObject *parent = 0);
@@ -82,6 +83,11 @@ private:
     
     int atk; /* attack damage */
     int attackRange; /* unit detect range */
+    int attackDelay; /* unit attack delay */
+    int attackCnt = 0; /*unit attack delay count */
+
+    float x;
+    float y;
 
     int group; /* friend or enemy */
     int target; /* healers use minus attack at friend */
