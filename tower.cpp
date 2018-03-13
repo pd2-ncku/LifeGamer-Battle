@@ -50,10 +50,10 @@ void Tower::active()
     if(attackCnt) --attackCnt;
     /* search for nearest target */
     for(Unit* iter : battle->UnitList) {
-        if(Minion* temp = dynamic_cast<Minion*>(iter)){
-            if(
-                            temp->group == target &&
-                            (Target == NULL || hypot(temp->x - x , temp->y - y) < hypot(Target->x - x , Target->y - y))){
+        if(Minion* temp = dynamic_cast<Minion*>(iter)) {
+            if(temp->group == target &&
+                (Target == NULL || hypot(temp->x - x , temp->y - y) < hypot(Target->x - x , Target->y - y)))
+            {
                 Target = temp;
             }
         }

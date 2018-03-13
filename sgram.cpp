@@ -4,7 +4,7 @@
 #include <QtMath>
 
 Sgram::Sgram(int group, Battle *battle, QObject *parent)
-    : Minion('8', "sgram", 2000, 5, 0.1f, 1000, 2, 60, group, battle, parent)
+    : Minion('8', "sgram", 1000, 5, 0.1f, 1000, 2, 60, group, battle, parent)
 {
     if(group == 1) setTarget(2);
     else setTarget(1);
