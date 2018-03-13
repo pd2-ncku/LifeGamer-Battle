@@ -195,22 +195,22 @@ void Battle::initTower(int SN)
     int x, y, size, group, target, p_x, p_y, atk, attackRange, attackDelay, hp; /* p_x p_y is for attack detection */
     switch(SN) { /* 123:group1, 456:group2, 2 and 5 are large tower */
     case 1:
-        x = 3;y = 7;size = 4;group = 1;p_x = 5;p_y = 10;hp = 4000;atk = 200;attackRange=6;attackDelay = 9;
+        x = 3;y = 7;size = 4;group = 1;p_x = 5;p_y = 10;hp = 2000;atk = 150;attackRange=6;attackDelay = 9;
         break;
     case 2:
-        x = 8;y = 3;size = 6;group = 1;p_x = 10;p_y = 8;hp = 5000;atk = 300;attackRange=7;attackDelay = 12;
+        x = 8;y = 3;size = 6;group = 1;p_x = 10;p_y = 8;hp = 2500;atk = 200;attackRange=7;attackDelay = 12;
         break;
     case 3:
-        x = 15;y = 7;size = 4;group = 1;p_x = 16;p_y = 10;hp = 4000;atk = 200;attackRange=6;attackDelay = 9;
+        x = 15;y = 7;size = 4;group = 1;p_x = 16;p_y = 10;hp = 2000;atk = 150;attackRange=6;attackDelay = 9;
         break;
     case 4:
-        x = 3;y = 41;size = 4;group = 2;p_x = 5;p_y = 41;hp = 4000;atk = 200;attackRange=6;attackDelay = 9;
+        x = 3;y = 41;size = 4;group = 2;p_x = 5;p_y = 41;hp = 2000;atk = 150;attackRange=6;attackDelay = 9;
         break;
     case 5:
-        x = 8;y = 43;size = 6;group = 2;p_x = 11;p_y = 43;hp = 5000;atk = 300;attackRange=7;attackDelay = 12;
+        x = 8;y = 43;size = 6;group = 2;p_x = 11;p_y = 43;hp = 2500;atk = 200;attackRange=7;attackDelay = 12;
         break;
     case 6:
-        x = 15;y = 41;size = 4;group = 2;p_x = 16;p_y = 41;hp = 4000;atk = 200;attackRange=6;attackDelay = 9;
+        x = 15;y = 41;size = 4;group = 2;p_x = 16;p_y = 41;hp = 2000;atk = 150;attackRange=6;attackDelay = 9;
         break;
     }
     if(group == 1) target = 2;
@@ -556,6 +556,37 @@ void Battle::clk()
             map_hp[m->fixed_x][m->fixed_y] = "0123456789A"[index];
         }
     }
+
+    /* Build colored map */
+    for(int i = 0;i < 22;i++) {
+        coloredMap[i].clear();
+        QTextStream ts(&coloredMap[i]);
+
+        for(int j = 0;j < 53;j++) {
+            if(map_hp[i][j] == ' ' || map_hp[i][j] == '#') {
+                ts << map[i][j];
+            }
+            else {
+                switch(map_hp[i][j]) {
+                case 'A': case '9': case '8': case '7': case '6':
+                    ts << GREEN;
+                    break;
+                case '5': case '4': case '3':
+                    ts << YELLOW;
+                    break;
+                case '2': case '1': case '0':
+                    ts << RED;
+                    break;
+                }
+
+                if(map[i][j] == '#')
+                    ts << map_hp[i][j] << NONE;
+                else
+                    ts << map[i][j] << NONE;
+            }
+        }
+    }
+
     QString p1_toSend, p2_toSend;
     QTextStream p1_toSendst(&p1_toSend);
     QTextStream p2_toSendst(&p2_toSend);
@@ -589,12 +620,18 @@ void Battle::clk()
     }
 
     if(displayMap) {
+        /*
         cout << p1_toSend.toStdString();
         for(int i = 0;i < 22;++i) {
             cout << map[i] << endl;
         }
         for(int i = 0;i < 22;++i) {
             cout << map_hp[i] << endl;
+        }
+        */
+        cout << p1_toSend.toStdString();
+        for(int i = 0;i < 22;i++) {
+            cout << coloredMap[i].toStdString() << endl;
         }
     }
 }

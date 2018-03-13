@@ -8,9 +8,20 @@
 #include <QTcpSocket>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
+#include <QString>
 
 #include "player.h"
 #include "rendercommunicator.h"
+
+/* Bash color code */
+#define NONE "\033[m"
+#define RED "\033[1;32;31m"
+#define GREEN "\033[1;32;32m"
+#define BLUE "\033[1;32;34m"
+#define CYAN "\033[1;36m"
+#define PURPLE "\033[1;35m"
+#define YELLOW "\033[1;33m"
+#define WHITE "\033[1;37m"
 
 class Unit;
 
@@ -79,6 +90,8 @@ private:
     Player *p2;
 
     int minion_cost[24];
+
+    QString coloredMap[22];
 
     void initMap();
     void initTower(int SN);
