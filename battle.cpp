@@ -544,18 +544,82 @@ void Battle::clk()
             (*it)->active();
         }
     }
+
+    /* The string will send to player */
+    QString p1_toSend, p2_toSend;
+    QTextStream p1_toSendst(&p1_toSend);
+    QTextStream p2_toSendst(&p2_toSend);
+
+    p1_toSendst << "BEGIN\n";
+    p1_toSendst << "TIME " << countdown / 10 << '\n';
+    p1_toSendst << "MANA " << p1->mana << '\n';
+
+    p2_toSendst << "BEGIN\n";
+    p2_toSendst << "TIME " << countdown / 10 << '\n';
+    p2_toSendst << "MANA " << p2->mana << '\n';
+
+    p1_toSendst << "DECK";
+    p2_toSendst << "DECK";
+    for(int i = 0;i < 4;i++) {
+        p1_toSendst << ' ' << p1->deck[i];
+        p2_toSendst << ' ' << p2->deck[i];
+    }
+    p1_toSendst << '\n';
+    p2_toSendst << '\n';
+
     /* update map_hp information */
     for(auto it = UnitList.begin();it != UnitList.end();++it) {
         if(Tower *t = dynamic_cast<Tower*>(*it)) {
             modifyTowerHp(t->SN, t->getHpRatio());
+
+            /* For player */
+            if(t->SN <= 3) { /* Left towers */
+                p1_toSendst << "TOWER " << t->SN << ' ' << t->getHpRatio() << " %\n";
+                p2_toSendst << "TOWER " << t->SN + 3 << ' ' << t->getHpRatio() << " %\n";
+            }
+            else {
+                p1_toSendst << "TOWER " << t->SN << ' ' << t->getHpRatio() << " %\n";
+                p2_toSendst << "TOWER " << t->SN - 3 << ' ' << t->getHpRatio() << " %\n";
+            }
         }
         else {
             Minion *m = dynamic_cast<Minion*>(*it);
             int index = m->getHpRatio()/10;
             if(index < 0) index = 0;
             map_hp[m->fixed_x][m->fixed_y] = "0123456789A"[index];
+
+            /* For player */
+            if(m->group == 1) {
+                p1_toSendst << "FRIEND ";
+                p2_toSendst << "ENEMY ";
+            }
+            else {
+                p1_toSendst << "ENEMY ";
+                p2_toSendst << "FRIEND ";
+            }
+            p1_toSendst << m->minion_num
+                        << " AT "
+                        << m->fixed_x << ',' << m->fixed_y
+                        << " HP "
+                        << m->getHpRatio()
+                        << " %\n";
+
+            p2_toSendst << m->minion_num
+                        << " AT "
+                        << m->fixed_x << ',' << 51 - m->fixed_y
+                        << " HP "
+                        << m->getHpRatio()
+                        << " %\n";
         }
     }
+
+    p1_toSendst << "END\n";
+    p2_toSendst << "END\n";
+
+    p1->write(p1_toSend.toStdString().c_str());
+    p2->write(p2_toSend.toStdString().c_str());
+
+    cout << p1_toSend.toStdString();
 
     /* Build colored map */
     for(int i = 0;i < 22;i++) {
@@ -587,49 +651,8 @@ void Battle::clk()
         }
     }
 
-    QString p1_toSend, p2_toSend;
-    QTextStream p1_toSendst(&p1_toSend);
-    QTextStream p2_toSendst(&p2_toSend);
-
-    p1_toSendst << countdown / 10 << ' ' << p1->mana;
-    p2_toSendst << countdown / 10 << ' ' << p2->mana;
-
-    for(int i = 0;i < 4;i++) {
-        p1_toSendst << ' ' << p1->deck[i];
-        p2_toSendst << ' ' << p2->deck[i];
-    }
-    p1_toSendst << '\n';
-    p2_toSendst << '\n';
-
-    p1->write(p1_toSend.toStdString().c_str());
-    p2->write(p2_toSend.toStdString().c_str());
-
-    for(int i = 0;i < 22;++i) {
-        p1->write(QByteArray(map[i]).append("\n"));
-        for(int j = 51;j >= 0;--j) {
-            p2->write(QByteArray(1, map[i][j]));
-        }
-        p2->write(QByteArray(1, '\n'));
-    }
-    for(int i = 0;i < 22;++i) {
-        p1->write(QByteArray(map_hp[i]).append("\n"));
-        for(int j = 51;j >= 0;--j) {
-            p2->write(QByteArray(1, map_hp[i][j]));
-        }
-        p2->write(QByteArray(1, '\n'));
-    }
-
     if(displayMap) {
-        /*
-        cout << p1_toSend.toStdString();
-        for(int i = 0;i < 22;++i) {
-            cout << map[i] << endl;
-        }
-        for(int i = 0;i < 22;++i) {
-            cout << map_hp[i] << endl;
-        }
-        */
-        cout << p1_toSend.toStdString();
+        cout << "Time: " << countdown / 10 << endl;
         for(int i = 0;i < 22;i++) {
             cout << coloredMap[i].toStdString() << endl;
         }
