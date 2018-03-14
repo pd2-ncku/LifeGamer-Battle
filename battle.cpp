@@ -33,6 +33,7 @@ Battle::Battle(QObject *parent) : QObject(parent),
     synchrogazer(new QTimer),
     started(false),
     render(new RenderCommunicator(this)),
+    judge(new JudgeCommunicator(this)),
     displayMap(false),
     echoCommand(false),
     judged(false),
@@ -597,18 +598,22 @@ void Battle::clk()
                 p1_toSendst << "ENEMY ";
                 p2_toSendst << "FRIEND ";
             }
+
+            int tmp_hp = m->getHpRatio();
+            if(tmp_hp < 0) tmp_hp = 0;
+
             p1_toSendst << m->minion_num
                         << " AT "
                         << m->fixed_x << ',' << m->fixed_y
                         << " HP "
-                        << m->getHpRatio()
+                        << tmp_hp
                         << " %\n";
 
             p2_toSendst << m->minion_num
                         << " AT "
                         << m->fixed_x << ',' << 51 - m->fixed_y
                         << " HP "
-                        << m->getHpRatio()
+                        << tmp_hp
                         << " %\n";
         }
     }
@@ -622,40 +627,55 @@ void Battle::clk()
     cout << p1_toSend.toStdString();
 
     /* Build colored map */
-    for(int i = 0;i < 22;i++) {
-        coloredMap[i].clear();
-        QTextStream ts(&coloredMap[i]);
+    QString coloredMap, htmlMap;
+    coloredMap.clear();
+    coloredMap.clear();
+    QTextStream ts(&coloredMap);
+    QTextStream ts_html(&htmlMap);
 
-        for(int j = 0;j < 53;j++) {
+
+    for(int i = 0;i < 22;i++) {
+        for(int j = 0;j < 52;j++) {
             if(map_hp[i][j] == ' ' || map_hp[i][j] == '#') {
                 ts << map[i][j];
+                ts_html << map[i][j];
             }
             else {
                 switch(map_hp[i][j]) {
                 case 'A': case '9': case '8': case '7': case '6':
                     ts << GREEN;
+                    ts_html << "<span style='color:#00E741;'>";
                     break;
                 case '5': case '4': case '3':
                     ts << YELLOW;
+                    ts_html << "<span style='color:#FFED25;'>";
                     break;
                 case '2': case '1': case '0':
                     ts << RED;
+                    ts_html << "<span style='color:#FF0000;'>";
                     break;
                 }
 
-                if(map[i][j] == '#')
+                if(map[i][j] == '#') {
                     ts << map_hp[i][j] << NONE;
-                else
+                    ts_html << map_hp[i][j] << "</span>";
+                }
+                else {
                     ts << map[i][j] << NONE;
+                    ts_html << map[i][j] << "</span>";
+                }
             }
         }
+        ts << '\n';
+        ts_html << "<br>";
     }
 
     if(displayMap) {
         cout << "Time: " << countdown / 10 << endl;
-        for(int i = 0;i < 22;i++) {
-            cout << coloredMap[i].toStdString() << endl;
-        }
+        cout << coloredMap.toStdString() << endl;
+    }
+    if(!(countdown % 10)) {
+        judge->sendMap(htmlMap);
     }
 }
 

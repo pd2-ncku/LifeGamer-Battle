@@ -12,6 +12,7 @@
 
 #include "player.h"
 #include "rendercommunicator.h"
+#include "judgecommunicator.h"
 
 /* Bash color code */
 #define NONE "\033[m"
@@ -82,6 +83,8 @@ private:
     QLinkedList<Unit*> UnitList;
     bool started;
     RenderCommunicator* render;
+    JudgeCommunicator* judge;
+
     bool displayMap;
     bool echoCommand;
     bool judged;
@@ -90,8 +93,6 @@ private:
     Player *p2;
 
     int minion_cost[24];
-
-    QString coloredMap[22];
 
     void initMap();
     void initTower(int SN);

@@ -25,7 +25,8 @@ SOURCES += main.cpp \
     player.cpp \
     rendercommunicator.cpp \
     elfdancer.cpp \
-    humanrifleman.cpp
+    humanrifleman.cpp \
+    judgecommunicator.cpp
 
 HEADERS += \
     battle.h \
@@ -43,4 +44,5 @@ HEADERS += \
     player.h \
     rendercommunicator.h \
     elfdancer.h \
-    humanrifleman.h
+    humanrifleman.h \
+    judgecommunicator.h
