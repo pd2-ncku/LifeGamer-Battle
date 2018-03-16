@@ -8,6 +8,7 @@
 #include <QUrlQuery>
 #include <QByteArray>
 #include <QTextStream>
+#include <QCoreApplication>
 
 #include <iostream>
 using namespace std;
@@ -50,7 +51,7 @@ Battle::Battle(QObject *parent) : QObject(parent),
 
     /* internal signal communication */
     connect(this, SIGNAL(decideWinLose(int)), this, SLOT(gameFinished(int)));
-    connect(this, SIGNAL(endGame()), this, SLOT(postSolve()));
+    connect(this, &Battle::endGame, this, &Battle::postSolve);
 
     /* player signals */
     connect(p1, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(p1_error(QProcess::ProcessError)));
@@ -76,34 +77,14 @@ bool Battle::setP1(QString path)
 {
     p1->start(path);
 
-    cout << "Starting your program..." << endl;
-    if(!p1->waitForStarted(1000)) {
-        cout << "\033[1;32;31mError: cannot start your program!\033[m" << endl;
-        judged = true;
-        cerr << "Player 1 fault" << endl;
-        cerr << "Player 2 win" << endl;
-        return false;
-    }
-    else {
-        cout << "\033[1;32;32mYour program has started.\033[m" << endl;
-        return true;
-    }
+    cout << "Starting Player 1..." << endl;
 }
 
 bool Battle::setP2(QString path)
 {
     p2->start(path);
 
-    if(!p2->waitForStarted(1000)) {
-        cout << "\033[1;32;31mError: cannot start your program!\033[m" << endl;
-        judged = true;
-        cerr << "Player 2 fault" << endl;
-        cerr << "Player 1 win" << endl;
-        return false;
-    }
-    else {
-        return true;
-    }
+    cout << "Starting Player 2..." << endl;
 }
 
 void Battle::setMapOutput()
@@ -132,7 +113,11 @@ void Battle::p1_error(QProcess::ProcessError error)
         judged = true;
         cerr << "Player 1 fault" << endl;
         cerr << "Player 2 win" << endl;
-        emit endGame();
+        emit endGame(1);
+    }
+    else if(error == QProcess::FailedToStart) {
+        cout << "\033[1;32;31mError: cannot start Player 1!\033[m" << endl;
+        emit endGame(1);
     }
 }
 
@@ -142,7 +127,11 @@ void Battle::p2_error(QProcess::ProcessError error)
         judged = true;
         cerr << "Player 2 fault" << endl;
         cerr << "Player 1 win" << endl;
-        emit endGame();
+        emit endGame(0);
+    }
+    else if(error == QProcess::FailedToStart) {
+        cout << "\033[1;32;31mError: cannot start Player 2!\033[m" << endl;
+        emit endGame(0);
     }
 }
 
@@ -447,14 +436,15 @@ void Battle::clk()
                 judged = true;
                 cerr << "Player 1 fault" << endl;
                 cerr << "Player 2 win" << endl;
+                emit endGame(1);
             }
             if(!p2->ready) {
                 //cerr << "Card choose fail" << endl;
                 judged = true;
                 cerr << "Player 2 fault" << endl;
                 cerr << "Player 1 win" << endl;
+                emit endGame(0);
             }
-            emit endGame();
         }
         return;
     }
@@ -740,15 +730,18 @@ void Battle::gameFinished(int SN)
     }
 
     render->sendEnd(winner, 3 - cnt2, 3 - cnt1);
-    emit endGame();
+    if(winner == 2) emit endGame(1);
+    else emit endGame(0);
 }
 
-void Battle::postSolve()
+void Battle::postSolve(int retval)
 {
+    judged = true;
     p1->kill();
     p2->kill();
     p1->waitForFinished(1000);
     p2->waitForFinished(1000);
 
-    emit quit();
+    QCoreApplication::exit(retval);
+    // emit quit();
 }

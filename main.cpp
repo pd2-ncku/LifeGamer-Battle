@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 
     if(args.size() < 2) {
         cerr << parser.helpText().toStdString();
-        return 0;
+        return 1;
     }
     else {
         if(parser.isSet(showMap)) {
@@ -59,14 +59,9 @@ int main(int argc, char *argv[])
         if(parser.isSet(echo)) {
             battle.setEchoOutput();
         }
-        if(!battle.setP1(args.at(0))) {
-            cerr << "P1 start failed." << endl;
-            return 0;
-        }
-        if(!battle.setP2(args.at(1))) {
-            cerr << "P2 start failed." << endl;
-            return 0;
-        }
+
+        battle.setP1(args.at(0));
+        battle.setP2(args.at(1));
     }
 
     QString name1, name2;

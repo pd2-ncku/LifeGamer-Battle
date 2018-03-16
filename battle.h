@@ -66,7 +66,7 @@ public:
 
 signals:
     void signalLogHp();
-    void endGame();
+    void endGame(int retval);
     void decideWinLose(int SN);
     void playerReady(int player);
     void quit();
@@ -104,7 +104,7 @@ private:
 private slots:
     void clk(); /* Game clock */
     void gameFinished(int SN);
-    void postSolve();
+    void postSolve(int retval);
 };
 
 #endif // BATTLE_H
