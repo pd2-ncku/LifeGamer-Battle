@@ -13,7 +13,7 @@ JudgeCommunicator::JudgeCommunicator(QObject *parent) : QObject(parent),
 void JudgeCommunicator::sendMap(QString map)
 {
     QJsonObject mapinfo;
-    mapinfo["token"] = "f6ea5cc739cae0a852d04f95fcf9f3d8377d3079816e4f5ed397add46d0fad2a";
+    mapinfo["token"] = "73f57cbb65d884edd9b1897b9d41d1c82dc7244a8c49478b0f2c5fbecda6838f";
     mapinfo["level"] = 1;
     mapinfo["data"] = QJsonValue(map);
 

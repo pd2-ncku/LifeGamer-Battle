@@ -23,9 +23,6 @@ public:
     bool reg();
     void addMana(int amount);
 
-signals:
-    void endGame();
-
 private slots:
     void readCommand();
 

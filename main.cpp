@@ -16,7 +16,6 @@ int main(int argc, char *argv[])
 
     QCommandLineParser parser;
 
-
     parser.addPositionalArgument("<p1>", QCoreApplication::translate("main", "Specific p1 program location."));
     parser.addPositionalArgument("<p2>", QCoreApplication::translate("main", "Specific p2 program location."));
 
@@ -27,6 +26,14 @@ int main(int argc, char *argv[])
     QCommandLineOption echo(QStringList() << "e" << "echo",
                 QCoreApplication::translate("main", "Echo your command."));
     parser.addOption(echo);
+
+    QCommandLineOption reg(QStringList() << "r" << "register",
+                QCoreApplication::translate("main", "Test card registering."));
+    parser.addOption(reg);
+
+    QCommandLineOption interact(QStringList() << "i" << "interact",
+                QCoreApplication::translate("main", "Test server interaction."));
+    parser.addOption(interact);
 
     QCommandLineOption p1_name(QStringList() << "1" << "p1",
                 QCoreApplication::translate("main", "Set player 1 name"),
@@ -58,6 +65,12 @@ int main(int argc, char *argv[])
         }
         if(parser.isSet(echo)) {
             battle.setEchoOutput();
+        }
+        if(parser.isSet(reg)) {
+            battle.setTestRegister();
+        }
+        if(parser.isSet(interact)) {
+            battle.setTestInteract();
         }
 
         battle.setP1(args.at(0));

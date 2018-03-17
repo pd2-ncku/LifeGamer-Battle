@@ -37,6 +37,8 @@ public:
     bool setP2(QString path);
     void setMapOutput();
     void setEchoOutput();
+    void setTestRegister();
+    void setTestInteract();
     void setP1Name(QString name);
     void setP2Name(QString name);
 
@@ -87,6 +89,8 @@ private:
 
     bool displayMap;
     bool echoCommand;
+    bool testRegister;
+    bool testInteract;
     bool judged;
 
     Player *p1;

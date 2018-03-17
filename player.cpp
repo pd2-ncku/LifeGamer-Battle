@@ -19,9 +19,7 @@ bool Player::reg()
         cout << cmd.toStdString();
     }*/
     if(cmd.length() != 16) {
-        cerr << "Card choose fail" << endl;
         cout << "\033[1;32;31mDeck registration error: command format error.\033[m" << endl;
-        //emit endGame();
         return false;
     }
     for(int i = 0;i < 8;++i) {
@@ -35,16 +33,12 @@ bool Player::reg()
         buf[i] = tmp - '0';
 
         if(buf[i] < 1 || enabled[buf[i] - 1] != '1') {
-            cerr << "Card choose fail" << endl;
             cout << "\033[1;32;31mDeck registration error: no such minion.\033[m" << endl;
-            //emit endGame();
             return false;
         }
         for(int j = 0;j < i;j++) {
             if(buf[i] == buf[j]) {
-                cerr << "Card choose fail" << endl;
                 cout << "\033[1;32;31mDeck registration error: duplicated minion.\033[m" << endl;
-                //emit endGame();
                 return false;
             }
         }
@@ -54,7 +48,6 @@ bool Player::reg()
         deck[i] = buf[i];
         todraw[i] = buf[i + 4];
     }
-    cerr << "Card choose success" << endl;
     cout << "\033[1;32;32mDeck registration success.\033[m" << endl;
     cmd.clear();
     ready = true;

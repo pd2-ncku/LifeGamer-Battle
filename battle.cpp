@@ -37,6 +37,8 @@ Battle::Battle(QObject *parent) : QObject(parent),
     judge(new JudgeCommunicator(this)),
     displayMap(false),
     echoCommand(false),
+    testRegister(false),
+    testInteract(false),
     judged(false),
     p1(new Player(this)),
     p2(new Player(this)),
@@ -55,10 +57,8 @@ Battle::Battle(QObject *parent) : QObject(parent),
 
     /* player signals */
     connect(p1, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(p1_error(QProcess::ProcessError)));
-    //connect(p1, SIGNAL(endGame()), this, SLOT(postSolve()));
 
     connect(p2, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(p2_error(QProcess::ProcessError)));
-    //connect(p2, SIGNAL(endGame()), this, SLOT(postSolve()));
 
     synchrogazer->start(100);
 }
@@ -95,6 +95,16 @@ void Battle::setMapOutput()
 void Battle::setEchoOutput()
 {
     echoCommand = true;
+}
+
+void Battle::setTestRegister()
+{
+    testRegister = true;
+}
+
+void Battle::setTestInteract()
+{
+    testInteract = true;
 }
 
 void Battle::setP1Name(QString name)
@@ -185,22 +195,22 @@ void Battle::initTower(int SN)
     int x, y, size, group, target, p_x, p_y, atk, attackRange, attackDelay, hp; /* p_x p_y is for attack detection */
     switch(SN) { /* 123:group1, 456:group2, 2 and 5 are large tower */
     case 1:
-        x = 3;y = 7;size = 4;group = 1;p_x = 5;p_y = 10;hp = 2000;atk = 150;attackRange=6;attackDelay = 9;
+        x = 3;y = 7;size = 4;group = 1;p_x = 5;p_y = 10;hp = 2000;atk = 100;attackRange=6;attackDelay = 9;
         break;
     case 2:
         x = 8;y = 3;size = 6;group = 1;p_x = 10;p_y = 8;hp = 2500;atk = 200;attackRange=7;attackDelay = 12;
         break;
     case 3:
-        x = 15;y = 7;size = 4;group = 1;p_x = 16;p_y = 10;hp = 2000;atk = 150;attackRange=6;attackDelay = 9;
+        x = 15;y = 7;size = 4;group = 1;p_x = 16;p_y = 10;hp = 2000;atk = 100;attackRange=6;attackDelay = 9;
         break;
     case 4:
-        x = 3;y = 41;size = 4;group = 2;p_x = 5;p_y = 41;hp = 2000;atk = 150;attackRange=6;attackDelay = 9;
+        x = 3;y = 41;size = 4;group = 2;p_x = 5;p_y = 41;hp = 2000;atk = 100;attackRange=6;attackDelay = 9;
         break;
     case 5:
         x = 8;y = 43;size = 6;group = 2;p_x = 11;p_y = 43;hp = 2500;atk = 200;attackRange=7;attackDelay = 12;
         break;
     case 6:
-        x = 15;y = 41;size = 4;group = 2;p_x = 16;p_y = 41;hp = 2000;atk = 150;attackRange=6;attackDelay = 9;
+        x = 15;y = 41;size = 4;group = 2;p_x = 16;p_y = 41;hp = 2000;atk = 100;attackRange=6;attackDelay = 9;
         break;
     }
     if(group == 1) target = 2;
@@ -302,6 +312,7 @@ int Battle::addMinion(int player, int num, int x, int y)
             }
         }
     }
+
     if(player == 2) {
         mana = p2->mana;
         group = 2;
@@ -313,24 +324,25 @@ int Battle::addMinion(int player, int num, int x, int y)
             }
         }
     }
+
     if(!inDeck) {
-        cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: minion not in deck.\033[m" << endl;
+        if(player == 1) cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: minion not in deck.\033[m" << endl;
         return SummonFailedNotInDeck;
     }
     else if(num < 1 || !minion_cost[num - 1]) {
-        cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: no such minion.\033[m" << endl;
+        if(player == 1) cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: no such minion.\033[m" << endl;
         return SummonFailedUnknowMinion;
     }
     else if(mana < minion_cost[num - 1]) {
-        cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: no enough mana.\033[m" << endl;
+        if(player == 1) cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: no enough mana.\033[m" << endl;
         return SummonFailedOM;
     }
     else if(y_raw > 24 || y_raw < 1 || x > 20 || x < 1) {
-        cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: out of range.\033[m" << endl;
+        if(player == 1) cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: out of range.\033[m" << endl;
         return SummonFailedOutOfRange;
     }
     else if(map[x][y] != ' ') {
-        cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: map occupied.\033[m" << endl;
+        if(player == 1) cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: map occupied.\033[m" << endl;
         return SummonFailedOccupied;
     }
     else {
@@ -393,7 +405,7 @@ int Battle::addMinion(int player, int num, int x, int y)
 
             render->setP2Hand(p2->deck);
         }
-        cout << "\033[1;32;32msummon minion " << num << " at " << x << " " << y << " success.\033[m" << endl;
+        if(player == 1) cout << "\033[1;32;32msummon minion " << num << " at " << x << " " << y << " success.\033[m" << endl;
         render->addNewMinion(newMinion->toJsonObject(true));
         return SummonSuccess;
     }
@@ -409,11 +421,17 @@ void Battle::clk()
         if(p1->cmd.length()) {
             if(p1->reg()) {
                 render->setP1Hand(p1->deck);
+                if(testRegister) {
+                    emit endGame(0);
+                }
             }
             else {
                 judged = true;
                 cerr << "Player 1 fault" << endl;
                 cerr << "Player 2 win" << endl;
+                if(testRegister) {
+                    emit endGame(1);
+                }
             }
         }
         if(p2->cmd.length()) {
@@ -468,6 +486,8 @@ void Battle::clk()
         p2->addMana(regen);
     }
 
+    if(displayMap || echoCommand) cout << "\033c";
+
     /* summon new minion */
     if(p1->cmd.length()) {
         if(echoCommand) {
@@ -481,24 +501,25 @@ void Battle::clk()
             if(command == 0) break;
             else if(command == 1) {
                 if(!p1_judge) {
-                    cerr << "Interact success" << endl;
                     p1_judge = true;
+                    if(testInteract) {
+                        emit endGame(0);
+                    }
                 }
                 compcmd >> trash >> tmp >> x >> y;
                 minion_ID = tmp - '0';
                 addMinion(1, minion_ID, x, y);
             }
             else {
-                cerr << "Interact fail" << endl;
+                if(testInteract) {
+                    emit endGame(1);
+                }
                 break;
             }
         }
         p1->cmd.clear();
     }
     if(p2->cmd.length()) {
-        if(echoCommand) {
-            cout << "\033[1;36m" << p2->cmd.toStdString() << "\033[m";
-        }
         char tmp, trash;
         int command, minion_ID, x, y;
         QTextStream compcmd(&p2->cmd);
@@ -614,7 +635,7 @@ void Battle::clk()
     p1->write(p1_toSend.toStdString().c_str());
     p2->write(p2_toSend.toStdString().c_str());
 
-    cout << p1_toSend.toStdString();
+    // cout << p1_toSend.toStdString();
 
     /* Build colored map */
     QString coloredMap, htmlMap;
@@ -661,8 +682,14 @@ void Battle::clk()
     }
 
     if(displayMap) {
-        cout << "Time: " << countdown / 10 << endl;
-        cout << coloredMap.toStdString() << endl;
+        cout << "Time: " << countdown / 10 << "    "
+             << "Mana: " << p1->mana << "    "
+             << "Deck:";
+        for(int i = 0;i < 4;i++) {
+            cout << ' ' << p1->deck[i];
+        }
+        cout << endl;
+        cout << coloredMap.toStdString();
     }
     if(!(countdown % 10)) {
         judge->sendMap(htmlMap);
@@ -737,6 +764,8 @@ void Battle::gameFinished(int SN)
 void Battle::postSolve(int retval)
 {
     judged = true;
+    synchrogazer->stop();
+
     p1->kill();
     p2->kill();
     p1->waitForFinished(1000);
