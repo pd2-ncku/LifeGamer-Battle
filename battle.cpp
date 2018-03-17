@@ -9,6 +9,7 @@
 #include <QByteArray>
 #include <QTextStream>
 #include <QCoreApplication>
+#include <QFile>
 
 #include <iostream>
 using namespace std;
@@ -123,6 +124,10 @@ void Battle::p1_error(QProcess::ProcessError error)
         judged = true;
         cerr << "Player 1 fault" << endl;
         cerr << "Player 2 win" << endl;
+        QFile file;
+        file.setFileName("crashed");
+        file.open(QIODevice::ReadWrite | QIODevice::Text);
+        file.close();
         emit endGame(1);
     }
     else if(error == QProcess::FailedToStart) {
@@ -644,6 +649,13 @@ void Battle::clk()
     QTextStream ts(&coloredMap);
     QTextStream ts_html(&htmlMap);
 
+    ts_html << "Time: " << countdown / 10 << "    "
+            << "Mana: " << p1->mana << "    "
+            << "Deck:";
+    for(int i = 0;i < 4;i++) {
+        ts_html << ' ' << p1->deck[i];
+    }
+    ts_html << "<br>";
 
     for(int i = 0;i < 22;i++) {
         for(int j = 0;j < 52;j++) {
@@ -655,15 +667,15 @@ void Battle::clk()
                 switch(map_hp[i][j]) {
                 case 'A': case '9': case '8': case '7': case '6':
                     ts << GREEN;
-                    ts_html << "<span style='color:#00E741;'>";
+                    ts_html << "<span style='color:#8AE234;'>";
                     break;
                 case '5': case '4': case '3':
                     ts << YELLOW;
-                    ts_html << "<span style='color:#FFED25;'>";
+                    ts_html << "<span style='color:#FCE94F;'>";
                     break;
                 case '2': case '1': case '0':
                     ts << RED;
-                    ts_html << "<span style='color:#FF0000;'>";
+                    ts_html << "<span style='color:#ED2929;'>";
                     break;
                 }
 
