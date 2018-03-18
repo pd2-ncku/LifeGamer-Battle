@@ -120,7 +120,7 @@ void Minion::walk()
     if(group == 1) { /* left side */
         if(fixed_x <= 10) {
             if(y < 25) { /* upper bridge */
-                target_x = 7;
+                target_x = 5;
                 target_y = 25;
             }
             else if(battle->map[6][41] == '#') { /* upper tower */
@@ -150,7 +150,7 @@ void Minion::walk()
     else { /* group2 */
         if(fixed_x <= 10) {
             if(y > 26) { /* upper bridge */
-                target_x = 7;
+                target_x = 5;
                 target_y = 26;
             }
             else if(battle->map[6][10] == '#') { /* upper tower */
