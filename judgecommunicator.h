@@ -22,6 +22,7 @@ signals:
 
 public slots:
     void sendMap(QString map);
+    void sendResult(QString result);
 
 private:
     QNetworkAccessManager *judgeServer;

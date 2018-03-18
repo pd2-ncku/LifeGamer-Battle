@@ -26,3 +26,20 @@ void JudgeCommunicator::sendMap(QString map)
 
     judgeServer->post(req, QByteArray(msg.toStdString().c_str()));
 }
+
+void JudgeCommunicator::sendResult(QString result)
+{
+    QJsonObject judgeResult;
+    judgeResult["token"] = QProcessEnvironment::systemEnvironment().value("TOKEN");
+    judgeResult["level"] = QProcessEnvironment::systemEnvironment().value("LEVEL");
+    judgeResult["data"] = QJsonValue(result);
+
+    QString msg(QJsonDocument(judgeResult).toJson(QJsonDocument::Compact));
+
+    QNetworkRequest req(host);
+
+    req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    req.setHeader(QNetworkRequest::ContentLengthHeader, msg.length());
+
+    judgeServer->post(req, QByteArray(msg.toStdString().c_str()));
+}

@@ -769,8 +769,14 @@ void Battle::gameFinished(int SN)
     }
 
     render->sendEnd(winner, 3 - cnt2, 3 - cnt1);
-    if(winner == 2) emit endGame(1);
-    else emit endGame(0);
+    if(winner == 2) {
+        judge->sendResult("You Lost...");
+        emit endGame(1);
+    }
+    else {
+        judge->sendResult("You Win!!!");
+        emit endGame(0);
+    }
 }
 
 void Battle::postSolve(int retval)
