@@ -1,8 +1,12 @@
 #include "judgecommunicator.h"
 
 #include <QProcessEnvironment>
+#include <QNetworkReply>
+#include <QTimer>
+#include <QEventLoop>
 
 JudgeCommunicator::JudgeCommunicator(QObject *parent) : QObject(parent),
+    resultReply(NULL),
     judgeServer(new QNetworkAccessManager(this)),
     host("http://hmkrl.com")
 {
@@ -41,5 +45,15 @@ void JudgeCommunicator::sendResult(QString result)
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     req.setHeader(QNetworkRequest::ContentLengthHeader, msg.length());
 
-    judgeServer->post(req, QByteArray(msg.toStdString().c_str()));
+    resultReply = judgeServer->post(req, QByteArray(msg.toStdString().c_str()));
+}
+
+void JudgeCommunicator::waitResultFinished(int timeout)
+{
+    QEventLoop loop;
+    if(resultReply == NULL) return;
+
+    connect(resultReply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    QTimer::singleShot(timeout, &loop, &QEventLoop::quit);
+    loop.exec();
 }

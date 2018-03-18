@@ -789,6 +789,7 @@ void Battle::postSolve(int retval)
     p1->waitForFinished(1000);
     p2->waitForFinished(1000);
 
+    judge->waitResultFinished(3000);
+
     QCoreApplication::exit(retval);
-    // emit quit();
 }

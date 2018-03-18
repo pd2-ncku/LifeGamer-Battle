@@ -17,12 +17,14 @@ class JudgeCommunicator : public QObject
     Q_OBJECT
 public:
     explicit JudgeCommunicator(QObject *parent = nullptr);
+    QNetworkReply *resultReply;
 
 signals:
 
 public slots:
     void sendMap(QString map);
     void sendResult(QString result);
+    void waitResultFinished(int timeout);
 
 private:
     QNetworkAccessManager *judgeServer;
