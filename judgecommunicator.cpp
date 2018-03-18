@@ -1,6 +1,6 @@
 #include "judgecommunicator.h"
 
-#include <iostream>
+#include <QProcessEnvironment>
 
 JudgeCommunicator::JudgeCommunicator(QObject *parent) : QObject(parent),
     judgeServer(new QNetworkAccessManager(this)),
@@ -13,8 +13,8 @@ JudgeCommunicator::JudgeCommunicator(QObject *parent) : QObject(parent),
 void JudgeCommunicator::sendMap(QString map)
 {
     QJsonObject mapinfo;
-    mapinfo["token"] = "73f57cbb65d884edd9b1897b9d41d1c82dc7244a8c49478b0f2c5fbecda6838f";
-    mapinfo["level"] = 1;
+    mapinfo["token"] = QProcessEnvironment::systemEnvironment().value("TOKEN");
+    mapinfo["level"] = QProcessEnvironment::systemEnvironment().value("LEVEL");
     mapinfo["data"] = QJsonValue(map);
 
     QString msg(QJsonDocument(mapinfo).toJson(QJsonDocument::Compact));
