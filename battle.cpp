@@ -41,8 +41,8 @@ Battle::Battle(QObject *parent) : QObject(parent),
     testRegister(false),
     testInteract(false),
     judged(false),
-    p1(new Player(this)),
-    p2(new Player(this)),
+    p1(NULL),
+    p2(NULL),
     minion_cost{5, 3, 4, 7, 1, 4, 9, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0}
              /* 1, 2, 3, 4, 5, 6, 7, 8, 9, :, ;, <, =, >, ?, @, A, B, C, D, E, F, G, H */
 {
@@ -55,11 +55,6 @@ Battle::Battle(QObject *parent) : QObject(parent),
     /* internal signal communication */
     connect(this, SIGNAL(decideWinLose(int)), this, SLOT(gameFinished(int)));
     connect(this, &Battle::endGame, this, &Battle::postSolve);
-
-    /* player signals */
-    connect(p1, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(p1_error(QProcess::ProcessError)));
-
-    connect(p2, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(p2_error(QProcess::ProcessError)));
 
     synchrogazer->start(100);
 }
@@ -76,6 +71,8 @@ void Battle::startBattle()
 
 bool Battle::setP1(QString path)
 {
+    p1 = new Player(this);
+    connect(p1, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(p1_error(QProcess::ProcessError)));
     p1->start(path);
 
     cout << "Starting Player 1..." << endl;
@@ -83,6 +80,8 @@ bool Battle::setP1(QString path)
 
 bool Battle::setP2(QString path)
 {
+    p2 = new Player(this);
+    connect(p2, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(p2_error(QProcess::ProcessError)));
     p2->start(path);
 
     cout << "Starting Player 2..." << endl;
@@ -420,8 +419,13 @@ void Battle::clk()
 {
     static bool p1_judge = false;
     static int cnt = 0;
-    if(countdown == 0)
+    if(countdown == 0) {
         emit decideWinLose(0);
+    }
+    if(testInteract && cnt++ >= 10) { /* interaction test failed: timeout */
+        cout << "\033[1;32;31mInteract test failed.\033[m" << endl;
+        emit endGame(1);
+    }
     if(!started) {
         if(p1->cmd.length()) {
             if(p1->reg()) {
@@ -439,7 +443,7 @@ void Battle::clk()
                 }
             }
         }
-        if(p2->cmd.length()) {
+        if(p2 && p2->cmd.length()) {
             if(p2->reg()) {
                 render->setP2Hand(p2->deck);
             }
@@ -449,7 +453,7 @@ void Battle::clk()
                 cerr << "Player 1 win" << endl;
             }
         }
-        if(p1->ready && p2->ready) {
+        if(p1->ready && (!p2 || p2->ready)) {
             startBattle();
         }
         if(cnt++ > 10) { /* register timeout is 1 second */
@@ -461,7 +465,7 @@ void Battle::clk()
                 cerr << "Player 2 win" << endl;
                 emit endGame(1);
             }
-            if(!p2->ready) {
+            if(p2 && !p2->ready) {
                 //cerr << "Card choose fail" << endl;
                 judged = true;
                 cerr << "Player 2 fault" << endl;
@@ -472,6 +476,7 @@ void Battle::clk()
         return;
     }
 
+#ifndef DEBUGTOOL
     for(auto it = UnitList.begin();it != UnitList.end();++it) {
         if(Minion *m = dynamic_cast<Minion*>(*it)) {
             render->addCurrentMinion(m->toJsonObject());
@@ -481,6 +486,7 @@ void Battle::clk()
             render->addBuilding(t->toJsonObject());
         }
     }
+#endif
 
     countdown -= 1;
 
@@ -488,7 +494,7 @@ void Battle::clk()
     if(!(countdown % 10)) {
         int regen = countdown < 600 ? 2 : 1;
         p1->addMana(regen);
-        p2->addMana(regen);
+        if(p2) p2->addMana(regen);
     }
 
     if(displayMap || echoCommand) cout << "\033c";
@@ -508,6 +514,7 @@ void Battle::clk()
                 if(!p1_judge) {
                     p1_judge = true;
                     if(testInteract) {
+                        cout << "\033[1;32;32mInteract test success.\033[m" << endl;
                         emit endGame(0);
                     }
                 }
@@ -517,6 +524,7 @@ void Battle::clk()
             }
             else {
                 if(testInteract) {
+                    cout << "\033[1;32;31mInteract test failed.\033[m" << endl;
                     emit endGame(1);
                 }
                 break;
@@ -524,7 +532,7 @@ void Battle::clk()
         }
         p1->cmd.clear();
     }
-    if(p2->cmd.length()) {
+    if(p2 && p2->cmd.length()) {
         char tmp, trash;
         int command, minion_ID, x, y;
         QTextStream compcmd(&p2->cmd);
@@ -541,7 +549,10 @@ void Battle::clk()
         p2->cmd.clear();
     }
 
+#ifndef DEBUGTOOL
     render->sendMap(countdown / 10, p1->mana, p2->mana);
+#endif
+
     emit signalLogHp();
 
     for(auto it = UnitList.begin();it != UnitList.end();++it) {
@@ -563,26 +574,17 @@ void Battle::clk()
     }
 
     /* The string will send to player */
-    QString p1_toSend, p2_toSend;
+    QString p1_toSend;
     QTextStream p1_toSendst(&p1_toSend);
-    QTextStream p2_toSendst(&p2_toSend);
 
     p1_toSendst << "BEGIN\n";
     p1_toSendst << "TIME " << countdown / 10 << '\n';
     p1_toSendst << "MANA " << p1->mana << '\n';
-
-    p2_toSendst << "BEGIN\n";
-    p2_toSendst << "TIME " << countdown / 10 << '\n';
-    p2_toSendst << "MANA " << p2->mana << '\n';
-
     p1_toSendst << "DECK";
-    p2_toSendst << "DECK";
     for(int i = 0;i < 4;i++) {
         p1_toSendst << ' ' << static_cast<char>(p1->deck[i] + '0');
-        p2_toSendst << ' ' << static_cast<char>(p2->deck[i] + '0');
     }
     p1_toSendst << '\n';
-    p2_toSendst << '\n';
 
     /* update map_hp information */
     for(auto it = UnitList.begin();it != UnitList.end();++it) {
@@ -592,11 +594,9 @@ void Battle::clk()
             /* For player */
             if(t->SN <= 3) { /* Left towers */
                 p1_toSendst << "TOWER " << t->SN << ' ' << t->getHpRatio() << "\n";
-                p2_toSendst << "TOWER " << t->SN + 3 << ' ' << t->getHpRatio() << "\n";
             }
             else {
                 p1_toSendst << "TOWER " << t->SN << ' ' << t->getHpRatio() << "\n";
-                p2_toSendst << "TOWER " << t->SN - 3 << ' ' << t->getHpRatio() << "\n";
             }
         }
         else {
@@ -608,11 +608,9 @@ void Battle::clk()
             /* For player */
             if(m->group == 1) {
                 p1_toSendst << "FRIEND ";
-                p2_toSendst << "ENEMY ";
             }
             else {
                 p1_toSendst << "ENEMY ";
-                p2_toSendst << "FRIEND ";
             }
 
             int tmp_hp = m->getHpRatio();
@@ -624,21 +622,69 @@ void Battle::clk()
                         << " HP "
                         << tmp_hp
                         << "\n";
-
-            p2_toSendst << m->minion_num
-                        << " AT "
-                        << m->fixed_x << ',' << 51 - m->fixed_y
-                        << " HP "
-                        << tmp_hp
-                        << "\n";
         }
     }
-
     p1_toSendst << "END\n";
-    p2_toSendst << "END\n";
 
     p1->write(p1_toSend.toStdString().c_str());
-    p2->write(p2_toSend.toStdString().c_str());
+
+
+    if(p2) {
+        QString p2_toSend;
+        QTextStream p2_toSendst(&p2_toSend);
+        p2_toSendst << "BEGIN\n";
+        p2_toSendst << "TIME " << countdown / 10 << '\n';
+        p2_toSendst << "MANA " << p2->mana << '\n';
+        p2_toSendst << "DECK";
+
+        for(int i = 0;i < 4;i++) {
+            p2_toSendst << ' ' << static_cast<char>(p2->deck[i] + '0');
+        }
+        p2_toSendst << '\n';
+
+        /* update map_hp information */
+        for(auto it = UnitList.begin();it != UnitList.end();++it) {
+            if(Tower *t = dynamic_cast<Tower*>(*it)) {
+                modifyTowerHp(t->SN, t->getHpRatio());
+
+                /* For player */
+                if(t->SN <= 3) { /* Left towers */
+                    p2_toSendst << "TOWER " << t->SN + 3 << ' ' << t->getHpRatio() << "\n";
+                }
+                else {
+                    p2_toSendst << "TOWER " << t->SN - 3 << ' ' << t->getHpRatio() << "\n";
+                }
+            }
+            else {
+                Minion *m = dynamic_cast<Minion*>(*it);
+                int index = m->getHpRatio()/10;
+                if(index < 0) index = 0;
+                map_hp[m->fixed_x][m->fixed_y] = "0123456789A"[index];
+
+                /* For player */
+                if(m->group == 1) {
+                    p2_toSendst << "ENEMY ";
+                }
+                else {
+                    p2_toSendst << "FRIEND ";
+                }
+
+                int tmp_hp = m->getHpRatio();
+                if(tmp_hp < 0) tmp_hp = 0;
+
+                p2_toSendst << m->minion_num
+                            << " AT "
+                            << m->fixed_x << ',' << 51 - m->fixed_y
+                            << " HP "
+                            << tmp_hp
+                            << "\n";
+            }
+        }
+        p2_toSendst << "END\n";
+
+        p2->write(p2_toSend.toStdString().c_str());
+    }
+
 
     // cout << p1_toSend.toStdString();
 
@@ -703,9 +749,11 @@ void Battle::clk()
         cout << endl;
         cout << coloredMap.toStdString();
     }
+#ifndef DEBUGTOOL
     if(!(countdown % 10)) {
         judge->sendMap(htmlMap);
     }
+#endif
 }
 
 void Battle::gameFinished(int SN)
@@ -767,7 +815,7 @@ void Battle::gameFinished(int SN)
             }
         }
     }
-
+#ifndef DEBUGTOOL
     render->sendEnd(winner, 3 - cnt2, 3 - cnt1);
     if(winner == 2) {
         judge->sendResult("You Lost...");
@@ -777,6 +825,14 @@ void Battle::gameFinished(int SN)
         judge->sendResult("You Win!!!");
         emit endGame(0);
     }
+#else
+    if(winner == 2) {
+        emit endGame(1);
+    }
+    else {
+        emit endGame(0);
+    }
+#endif
 }
 
 void Battle::postSolve(int retval)
@@ -785,11 +841,13 @@ void Battle::postSolve(int retval)
     synchrogazer->stop();
 
     p1->kill();
-    p2->kill();
+    if(p2) p2->kill();
     p1->waitForFinished(1000);
-    p2->waitForFinished(1000);
+    if(p2) p2->waitForFinished(1000);
 
+#ifndef DEBUGTOOL
     judge->waitResultFinished(3000);
+#endif
 
     QCoreApplication::exit(retval);
 }

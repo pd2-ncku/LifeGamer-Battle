@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
                 QCoreApplication::translate("main", "Test server interaction."));
     parser.addOption(interact);
 
+#ifndef DEBUGTOOL
     QCommandLineOption p1_name(QStringList() << "1" << "p1",
                 QCoreApplication::translate("main", "Set player 1 name"),
                 QCoreApplication::translate("main", "player 1 name"));
@@ -44,6 +45,7 @@ int main(int argc, char *argv[])
                 QCoreApplication::translate("main", "Set player 2 name"),
                 QCoreApplication::translate("main", "player 2 name"));
     parser.addOption(p2_name);
+#endif
 
     parser.addHelpOption();
     parser.addVersionOption();
@@ -55,7 +57,7 @@ int main(int argc, char *argv[])
     Battle battle;
     QObject::connect(&battle, SIGNAL(quit()), &app, SLOT(quit()));
 
-    if(args.size() < 2) {
+    if(args.size() < 1) {
         cerr << parser.helpText().toStdString();
         return 1;
     }
@@ -74,9 +76,12 @@ int main(int argc, char *argv[])
         }
 
         battle.setP1(args.at(0));
-        battle.setP2(args.at(1));
+        if(args.size() == 2) {
+            battle.setP2(args.at(1));
+        }
     }
 
+#ifndef DEBUGTOOL
     QString name1, name2;
     name1 = parser.value(p1_name);
     name2 = parser.value(p2_name);
@@ -88,6 +93,7 @@ int main(int argc, char *argv[])
         battle.setP1Name(name1);
         battle.setP2Name(name2);
     }
+#endif
 
     return app.exec();
 }

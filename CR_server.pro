@@ -7,6 +7,8 @@ TARGET = CR_server
 CONFIG += console
 CONFIG -= app_bundle
 
+DEFINES +=
+
 TEMPLATE = app
 
 SOURCES += main.cpp \
