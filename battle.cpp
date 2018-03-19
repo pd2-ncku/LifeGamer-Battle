@@ -331,23 +331,23 @@ int Battle::addMinion(int player, int num, int x, int y)
     }
 
     if(!inDeck) {
-        if(player == 1) cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: minion not in deck.\033[m" << endl;
+        if(player == 1) cout << "\033[1;32;31msummon minion " << static_cast<char>(num + '0') << " at " << x << " " << y << " failed: minion not in deck.\033[m" << endl;
         return SummonFailedNotInDeck;
     }
     else if(num < 1 || !minion_cost[num - 1]) {
-        if(player == 1) cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: no such minion.\033[m" << endl;
+        if(player == 1) cout << "\033[1;32;31msummon minion " << static_cast<char>(num + '0') << " at " << x << " " << y << " failed: no such minion.\033[m" << endl;
         return SummonFailedUnknowMinion;
     }
     else if(mana < minion_cost[num - 1]) {
-        if(player == 1) cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: no enough mana.\033[m" << endl;
+        if(player == 1) cout << "\033[1;32;31msummon minion " << static_cast<char>(num + '0') << " at " << x << " " << y << " failed: no enough mana.\033[m" << endl;
         return SummonFailedOM;
     }
     else if(y_raw > 24 || y_raw < 1 || x > 20 || x < 1) {
-        if(player == 1) cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: out of range.\033[m" << endl;
+        if(player == 1) cout << "\033[1;32;31msummon minion " << static_cast<char>(num + '0') << " at " << x << " " << y << " failed: out of range.\033[m" << endl;
         return SummonFailedOutOfRange;
     }
     else if(map[x][y] != ' ') {
-        if(player == 1) cout << "\033[1;32;31msummon minion " << num << " at " << x << " " << y << " failed: map occupied.\033[m" << endl;
+        if(player == 1) cout << "\033[1;32;31msummon minion " << static_cast<char>(num + '0') << " at " << x << " " << y << " failed: map occupied.\033[m" << endl;
         return SummonFailedOccupied;
     }
     else {
@@ -410,7 +410,7 @@ int Battle::addMinion(int player, int num, int x, int y)
 
             render->setP2Hand(p2->deck);
         }
-        if(player == 1) cout << "\033[1;32;32msummon minion " << num << " at " << x << " " << y << " success.\033[m" << endl;
+        if(player == 1) cout << "\033[1;32;32msummon minion " << static_cast<char>(num + '0') << " at " << x << " " << y << " success.\033[m" << endl;
         render->addNewMinion(newMinion->toJsonObject(true));
         return SummonSuccess;
     }
@@ -578,8 +578,8 @@ void Battle::clk()
     p1_toSendst << "DECK";
     p2_toSendst << "DECK";
     for(int i = 0;i < 4;i++) {
-        p1_toSendst << ' ' << p1->deck[i];
-        p2_toSendst << ' ' << p2->deck[i];
+        p1_toSendst << ' ' << static_cast<char>(p1->deck[i] + '0');
+        p2_toSendst << ' ' << static_cast<char>(p2->deck[i] + '0');
     }
     p1_toSendst << '\n';
     p2_toSendst << '\n';
@@ -591,12 +591,12 @@ void Battle::clk()
 
             /* For player */
             if(t->SN <= 3) { /* Left towers */
-                p1_toSendst << "TOWER " << t->SN << ' ' << t->getHpRatio() << " %\n";
-                p2_toSendst << "TOWER " << t->SN + 3 << ' ' << t->getHpRatio() << " %\n";
+                p1_toSendst << "TOWER " << t->SN << ' ' << t->getHpRatio() << "\n";
+                p2_toSendst << "TOWER " << t->SN + 3 << ' ' << t->getHpRatio() << "\n";
             }
             else {
-                p1_toSendst << "TOWER " << t->SN << ' ' << t->getHpRatio() << " %\n";
-                p2_toSendst << "TOWER " << t->SN - 3 << ' ' << t->getHpRatio() << " %\n";
+                p1_toSendst << "TOWER " << t->SN << ' ' << t->getHpRatio() << "\n";
+                p2_toSendst << "TOWER " << t->SN - 3 << ' ' << t->getHpRatio() << "\n";
             }
         }
         else {
@@ -623,14 +623,14 @@ void Battle::clk()
                         << m->fixed_x << ',' << m->fixed_y
                         << " HP "
                         << tmp_hp
-                        << " %\n";
+                        << "\n";
 
             p2_toSendst << m->minion_num
                         << " AT "
                         << m->fixed_x << ',' << 51 - m->fixed_y
                         << " HP "
                         << tmp_hp
-                        << " %\n";
+                        << "\n";
         }
     }
 
@@ -653,7 +653,7 @@ void Battle::clk()
             << "Mana: " << p1->mana << "    "
             << "Deck:";
     for(int i = 0;i < 4;i++) {
-        ts_html << ' ' << p1->deck[i];
+        ts_html << ' ' << static_cast<char>(p1->deck[i] + '0');
     }
     ts_html << "<br>";
 
@@ -698,7 +698,7 @@ void Battle::clk()
              << "Mana: " << p1->mana << "    "
              << "Deck:";
         for(int i = 0;i < 4;i++) {
-            cout << ' ' << p1->deck[i];
+            cout << ' ' << static_cast<char>(p1->deck[i] + '0');
         }
         cout << endl;
         cout << coloredMap.toStdString();
