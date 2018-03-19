@@ -509,7 +509,13 @@ void Battle::clk()
         QTextStream compcmd(&p1->cmd);
         while(!compcmd.atEnd()) {
             compcmd >> command;
-            if(command == 0) break;
+            if(command == 0) {
+                if(testInteract) {
+                    cout << "\033[1;32;32mInteract test success.\033[m" << endl;
+                    emit endGame(0);
+                }
+                break;
+            }
             else if(command == 1) {
                 if(!p1_judge) {
                     p1_judge = true;
