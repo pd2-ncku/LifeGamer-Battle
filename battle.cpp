@@ -43,7 +43,7 @@ Battle::Battle(QObject *parent) : QObject(parent),
     judged(false),
     p1(NULL),
     p2(NULL),
-    minion_cost{5, 3, 4, 7, 1, 4, 9, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0}
+    minion_cost{5, 3, 2, 6, 1, 4, 8, 5, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0}
              /* 1, 2, 3, 4, 5, 6, 7, 8, 9, :, ;, <, =, >, ?, @, A, B, C, D, E, F, G, H */
 {
     synchrogazer->setTimerType(Qt::PreciseTimer);
@@ -199,22 +199,22 @@ void Battle::initTower(int SN)
     int x, y, size, group, target, p_x, p_y, atk, attackRange, attackDelay, hp; /* p_x p_y is for attack detection */
     switch(SN) { /* 123:group1, 456:group2, 2 and 5 are large tower */
     case 1:
-        x = 3;y = 7;size = 4;group = 1;p_x = 5;p_y = 10;hp = 2000;atk = 100;attackRange=6;attackDelay = 9;
+        x = 3;y = 7;size = 4;group = 1;p_x = 5;p_y = 10;hp = 5000;atk = 170;attackRange=7;attackDelay = 8;
         break;
     case 2:
-        x = 8;y = 3;size = 6;group = 1;p_x = 10;p_y = 8;hp = 2500;atk = 200;attackRange=7;attackDelay = 12;
+        x = 8;y = 3;size = 6;group = 1;p_x = 10;p_y = 8;hp = 8000;atk = 200;attackRange=8;attackDelay = 5;
         break;
     case 3:
-        x = 15;y = 7;size = 4;group = 1;p_x = 16;p_y = 10;hp = 2000;atk = 100;attackRange=6;attackDelay = 9;
+        x = 15;y = 7;size = 4;group = 1;p_x = 16;p_y = 10;hp = 5000;atk = 170;attackRange=7;attackDelay = 8;
         break;
     case 4:
-        x = 3;y = 41;size = 4;group = 2;p_x = 5;p_y = 41;hp = 2000;atk = 100;attackRange=6;attackDelay = 9;
+        x = 3;y = 41;size = 4;group = 2;p_x = 5;p_y = 41;hp = 5000;atk = 170;attackRange=7;attackDelay = 8;
         break;
     case 5:
-        x = 8;y = 43;size = 6;group = 2;p_x = 11;p_y = 43;hp = 2500;atk = 200;attackRange=7;attackDelay = 12;
+        x = 8;y = 43;size = 6;group = 2;p_x = 11;p_y = 43;hp = 8000;atk = 200;attackRange=8;attackDelay = 5;
         break;
     case 6:
-        x = 15;y = 41;size = 4;group = 2;p_x = 16;p_y = 41;hp = 2000;atk = 100;attackRange=6;attackDelay = 9;
+        x = 15;y = 41;size = 4;group = 2;p_x = 16;p_y = 41;hp = 5000;atk = 170;attackRange=7;attackDelay = 8;
         break;
     }
     if(group == 1) target = 2;
@@ -684,7 +684,6 @@ void Battle::clk()
 
         p2->write(p2_toSend.toStdString().c_str());
     }
-
 
     // cout << p1_toSend.toStdString();
 

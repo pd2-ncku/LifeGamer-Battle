@@ -3,7 +3,7 @@
 #include <QtMath>
 
 ElfWisp::ElfWisp(int group, Battle *battle, QObject *parent)
-    : Minion('5', "elf_wisp", 125, 1, 0.3f, -5, 4, 3, group, battle, parent)
+    : Minion('5', "elf_wisp", 160, 1, 0.3f, -15, 3, 5, group, battle, parent)
 {
     setTarget(group);
 }
