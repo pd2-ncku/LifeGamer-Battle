@@ -8,7 +8,7 @@
 JudgeCommunicator::JudgeCommunicator(QObject *parent) : QObject(parent),
     resultReply(NULL),
     judgeServer(new QNetworkAccessManager(this)),
-    host("http://hmkrl.com")
+    host("http://localhost")
 {
     host.setPort(3000);
     host.setPath("/game");

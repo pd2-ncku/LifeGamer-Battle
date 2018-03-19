@@ -1,7 +1,7 @@
 #include "elfdancer.h"
 
 ElfDancer::ElfDancer(int group, Battle *battle, QObject *parent)
-    : Minion('9', "elf_dancer", 300, 3, 0.2f, 0, 0, 25, group, battle, parent)
+    : Minion('9', "elf_dancer", 300, 3, 0.2f, 0, 0, 20, group, battle, parent)
 {
     cnt = 0;
 }
