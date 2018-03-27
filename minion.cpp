@@ -127,7 +127,7 @@ void Minion::walk()
                 target_x = 7;
                 target_y = 5;
             }
-            else(y < 25) { /* upper bridge */
+            else if(y < 25) { /* upper bridge */
                 target_x = 6 + ran;
                 target_y = 25;
             }
