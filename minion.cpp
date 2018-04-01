@@ -115,11 +115,15 @@ void Minion::walk()
     int target_x, target_y;
     int random_effect[3] = {-1, 0, 1};
     int ran = random_effect[qrand() % 3];
-
+    
     /* decide walking target */
     if(group == 1) { /* left side */
-        if(fixed_x <= 10) {
-            if(y < 25) { /* upper bridge */
+        if(fixed_x <= 10) {/* upper bridge */
+            if( fixed_y < 10 && ( fixed_x <= 6) && battle->map[5][7] == '#'){/*fix stuck tower*/
+                target_x = 2 ;
+                target_y = 11 +ran;
+            }
+            else if(y < 25) { /* upper bridge */
                 target_x = 6 + ran;
                 target_y = 25;
             }
@@ -132,8 +136,12 @@ void Minion::walk()
                 target_y = 45;
             }
         }
-        else {
-            if(y < 25) { /* lower bridge */
+        else {/* lower bridge */
+            if(fixed_y < 10 && fixed_x >=15 && battle->map[16][7] == '#'){/*fix stuck tower*/
+                target_x = 19;
+                target_y = 11+ran;
+            }
+           else if(y < 25) { /* lower bridge */
                 target_x = 15 + ran;
                 target_y = 25;
             }
@@ -148,8 +156,12 @@ void Minion::walk()
         }
     }
     else { /* group2 */
-        if(fixed_x <= 10) {
-            if(y > 26) { /* upper bridge */
+        if(fixed_x <= 10) { /* upper bridge */
+            if(fixed_y > 41 && fixed_x<=6 && battle->map[5][44] == '#'){/*fix stuck tower*/
+                target_x = 2;
+                target_y = 40 - ran;
+            }
+           else if(y > 26) {
                 target_x = 6 + ran;
                 target_y = 26;
             }
@@ -163,7 +175,11 @@ void Minion::walk()
             }
         }
         else {
-            if(y > 26) { /* lower bridge */
+            if(fixed_y > 41 && fixed_x>=15 && battle->map[16][44] == '#'){/*fix stuck tower*/
+                target_x = 19;
+                target_y = 40 - ran;
+            }
+           else if(y > 26) { /* lower bridge */
                 target_x = 15 + ran;
                 target_y = 26;
             }
@@ -177,21 +193,21 @@ void Minion::walk()
             }
         }
     }
-
+    
     float base = qFabs(target_x - x) + qFabs(target_y - y);
-
+    
     int temp_x = static_cast<int>(x);
     int temp_y = static_cast<int>(y);
-
+    
     float dir_x = (target_x - x) * walkSpeed / base;
     float dir_y = (target_y - y) * walkSpeed / base;
-
+    
     if(fixed_x == temp_x) x += dir_x;
     if(fixed_y == temp_y) y += dir_y;
-
+    
     battle->map[fixed_x][fixed_y] = ' ';
     battle->map_hp[fixed_x][fixed_y] = ' ';
-
+    
     if(fixed_x != static_cast<int>(x)) {
         if(battle->map[temp_x][fixed_y] == ' ') {
             fixed_x = temp_x;
@@ -202,10 +218,11 @@ void Minion::walk()
             fixed_y = temp_y;
         }
     }
-
+    
     battle->map[fixed_x][fixed_y] = minion_num;
     setWalkDirection(target_x, target_y);
 }
+
 
 void Minion::setWalkDirection(float target_x, float target_y)
 {
