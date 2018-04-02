@@ -101,6 +101,8 @@ void RenderCommunicator::sendMap(int time, int p1_mana, int p2_mana)
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     req.setHeader(QNetworkRequest::ContentLengthHeader, msg.length());
 
+    req.setSslConfiguration(QSslConfiguration::defaultConfiguration());
+
     renderServer->post(req, QByteArray(msg.toStdString().c_str()));
 
     clear();
@@ -140,6 +142,8 @@ void RenderCommunicator::sendEnd(int winner, int p1_destroy, int p2_destroy)
 
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     req.setHeader(QNetworkRequest::ContentLengthHeader, msg.length());
+
+    req.setSslConfiguration(QSslConfiguration::defaultConfiguration());
 
     QNetworkReply *rep = renderServer->post(req, QByteArray(msg.toStdString().c_str()));
     QEventLoop loop;

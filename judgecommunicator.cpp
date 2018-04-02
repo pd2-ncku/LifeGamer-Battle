@@ -6,12 +6,21 @@
 #include <QEventLoop>
 
 JudgeCommunicator::JudgeCommunicator(QObject *parent) : QObject(parent),
-    resultReply(NULL),
     judgeServer(new QNetworkAccessManager(this)),
     host("http://localhost")
 {
     host.setPort(3000);
     host.setPath("/game");
+}
+
+void JudgeCommunicator::setP1(QString name)
+{
+    p1 = name;
+}
+
+void JudgeCommunicator::setP2(QString name)
+{
+    p2 = name;
 }
 
 void JudgeCommunicator::sendMap(QString map)
@@ -45,15 +54,36 @@ void JudgeCommunicator::sendResult(QString result)
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     req.setHeader(QNetworkRequest::ContentLengthHeader, msg.length());
 
-    resultReply = judgeServer->post(req, QByteArray(msg.toStdString().c_str()));
+    QNetworkReply *rep = judgeServer->post(req, QByteArray(msg.toStdString().c_str()));
+
+    QEventLoop loop;
+    connect(rep, SIGNAL(finished()), &loop, SLOT(quit()));
+
+    loop.exec();
 }
 
-void JudgeCommunicator::waitResultFinished(int timeout)
+void JudgeCommunicator::sendBattleResult(int result)
 {
-    QEventLoop loop;
-    if(resultReply == NULL) return;
+    QJsonObject battleResult;
+    battleResult["level"] = QJsonValue("battle");
 
-    connect(resultReply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-    QTimer::singleShot(timeout, &loop, &QEventLoop::quit);
+    QJsonArray data;
+    data.append(QJsonValue(p1));
+    data.append(QJsonValue(p2));
+    data.append(QJsonValue(result));
+    battleResult["data"] = data;
+
+    QString msg(QJsonDocument(battleResult).toJson(QJsonDocument::Compact));
+
+    QNetworkRequest req(host);
+
+    req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    req.setHeader(QNetworkRequest::ContentLengthHeader, msg.length());
+
+    QNetworkReply *rep = judgeServer->post(req, QByteArray(msg.toStdString().c_str()));
+
+    QEventLoop loop;
+    connect(rep, SIGNAL(finished()), &loop, SLOT(quit()));
+
     loop.exec();
 }

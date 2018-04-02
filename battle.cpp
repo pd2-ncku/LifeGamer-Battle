@@ -110,11 +110,13 @@ void Battle::setTestInteract()
 void Battle::setP1Name(QString name)
 {
     render->setP1(name);
+    judge->setP1(name);
 }
 
 void Battle::setP2Name(QString name)
 {
     render->setP2(name);
+    judge->setP2(name);
 }
 
 void Battle::p1_error(QProcess::ProcessError error)
@@ -822,6 +824,7 @@ void Battle::gameFinished(int SN)
     }
 #ifndef DEBUGTOOL
     render->sendEnd(winner, 3 - cnt2, 3 - cnt1);
+    judge->sendBattleResult(winner);
     if(winner == 2) {
         judge->sendResult("You Lost...");
         emit endGame(1);
@@ -849,10 +852,6 @@ void Battle::postSolve(int retval)
     if(p2) p2->kill();
     p1->waitForFinished(1000);
     if(p2) p2->waitForFinished(1000);
-
-#ifndef DEBUGTOOL
-    judge->waitResultFinished(3000);
-#endif
 
     QCoreApplication::exit(retval);
 }
