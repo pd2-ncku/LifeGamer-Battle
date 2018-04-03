@@ -37,7 +37,8 @@ int Unit::getHpRatio()
 
 int Unit::getHpChange()
 {
-    return getHpRatio() - previousHpRatio;
+    if(hp <= 0) return -100;
+    else return getHpRatio() - previousHpRatio;
 }
 
 int Unit::getCost()

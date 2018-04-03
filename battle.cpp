@@ -576,9 +576,10 @@ void Battle::clk()
 
             it = UnitList.erase(it);
         }
-        else {
-            (*it)->active();
-        }
+    }
+
+    for(auto it = UnitList.begin();it != UnitList.end();++it) {
+        (*it)->active();
     }
 
     /* The string will send to player */
