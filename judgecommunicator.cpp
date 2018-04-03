@@ -67,11 +67,20 @@ void JudgeCommunicator::sendBattleResult(int result)
     QJsonObject battleResult;
     battleResult["level"] = QJsonValue("battle");
 
-    QJsonArray data;
-    data.append(QJsonValue(p1));
-    data.append(QJsonValue(p2));
-    data.append(QJsonValue(result));
-    battleResult["data"] = data;
+    battleResult["attack_user"] = p1;
+
+    if(result == 1) {
+        battleResult["winner"] = p1;
+        battleResult["loser"] = p2;
+    }
+    else if(result == 2){
+        battleResult["winner"] = p2;
+        battleResult["loser"] = p1;
+    }
+    else {
+        battleResult["winner"] = "Tie";
+        battleResult["loser"] = "Tie";
+    }
 
     QString msg(QJsonDocument(battleResult).toJson(QJsonDocument::Compact));
 
