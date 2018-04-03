@@ -10,11 +10,15 @@ void ElfDancer::active()//will move this cnt to minion::active
 {
     attackCnt++;
     if(attackCnt==attackDelay) {
-        if(group == 1) battle->p1->addMana(1);
-        else battle->p2->addMana(1);
         hp -= 60;
         attackCnt = 0;
     }
 
     walk();
+}
+
+ElfDancer::~ElfDancer()
+{
+    if(group == 1) battle->p1->addMana(5);
+    else battle->p2->addMana(5);
 }

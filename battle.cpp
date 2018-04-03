@@ -201,22 +201,22 @@ void Battle::initTower(int SN)
     int x, y, size, group, target, p_x, p_y, atk, attackRange, attackDelay, hp; /* p_x p_y is for attack detection */
     switch(SN) { /* 123:group1, 456:group2, 2 and 5 are large tower */
     case 1:
-        x = 3;y = 7;size = 4;group = 1;p_x = 5;p_y = 10;hp = 5000;atk = 170;attackRange=7;attackDelay = 8;
+        x = 3;y = 7;size = 4;group = 1;p_x = 5;p_y = 10;hp = 4000;atk = 170;attackRange=7;attackDelay = 8;
         break;
     case 2:
-        x = 8;y = 3;size = 6;group = 1;p_x = 10;p_y = 8;hp = 8000;atk = 200;attackRange=8;attackDelay = 5;
+        x = 8;y = 3;size = 6;group = 1;p_x = 10;p_y = 8;hp = 6000;atk = 200;attackRange=8;attackDelay = 5;
         break;
     case 3:
-        x = 15;y = 7;size = 4;group = 1;p_x = 16;p_y = 10;hp = 5000;atk = 170;attackRange=7;attackDelay = 8;
+        x = 15;y = 7;size = 4;group = 1;p_x = 16;p_y = 10;hp = 4000;atk = 170;attackRange=7;attackDelay = 8;
         break;
     case 4:
-        x = 3;y = 41;size = 4;group = 2;p_x = 5;p_y = 41;hp = 5000;atk = 170;attackRange=7;attackDelay = 8;
+        x = 3;y = 41;size = 4;group = 2;p_x = 5;p_y = 41;hp = 4000;atk = 170;attackRange=7;attackDelay = 8;
         break;
     case 5:
-        x = 8;y = 43;size = 6;group = 2;p_x = 11;p_y = 43;hp = 8000;atk = 200;attackRange=8;attackDelay = 5;
+        x = 8;y = 43;size = 6;group = 2;p_x = 11;p_y = 43;hp = 6000;atk = 200;attackRange=8;attackDelay = 5;
         break;
     case 6:
-        x = 15;y = 41;size = 4;group = 2;p_x = 16;p_y = 41;hp = 5000;atk = 170;attackRange=7;attackDelay = 8;
+        x = 15;y = 41;size = 4;group = 2;p_x = 16;p_y = 41;hp = 4000;atk = 170;attackRange=7;attackDelay = 8;
         break;
     }
     if(group == 1) target = 2;
@@ -574,7 +574,8 @@ void Battle::clk()
                 map_hp[m->fixed_x][m->fixed_y] = ' ';
             }
 
-            it = UnitList.erase(it);
+            delete *it;
+            it = UnitList.erase(it)--;
         }
     }
 

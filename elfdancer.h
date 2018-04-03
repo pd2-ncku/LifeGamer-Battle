@@ -11,6 +11,8 @@ public:
 
     virtual void active();
 
+    virtual ~ElfDancer();
+
 private:
     int cnt;
 };

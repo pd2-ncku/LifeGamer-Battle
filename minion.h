@@ -13,6 +13,8 @@ public:
     virtual QJsonObject toJsonObject(bool isNew = false);
     virtual void active();
 
+    virtual ~Minion();
+
     friend class Battle;
     friend class Tower;
 

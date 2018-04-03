@@ -110,6 +110,11 @@ void Minion::active()
     }
 }
 
+Minion::~Minion()
+{
+
+}
+
 void Minion::walk()
 {
     int target_x, target_y;
