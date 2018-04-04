@@ -108,7 +108,7 @@ private:
 private slots:
     void clk(); /* Game clock */
     void gameFinished(int SN);
-    void postSolve(int retval);
+    void postSolve(int winner);
 };
 
 #endif // BATTLE_H

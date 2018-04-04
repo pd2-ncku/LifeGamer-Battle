@@ -129,11 +129,11 @@ void Battle::p1_error(QProcess::ProcessError error)
         file.setFileName("crashed");
         file.open(QIODevice::ReadWrite | QIODevice::Text);
         file.close();
-        emit endGame(1);
+        emit endGame(2);
     }
     else if(error == QProcess::FailedToStart) {
         cout << "\033[1;32;31mError: cannot start Player 1!\033[m" << endl;
-        emit endGame(1);
+        emit endGame(2);
     }
 }
 
@@ -143,11 +143,11 @@ void Battle::p2_error(QProcess::ProcessError error)
         judged = true;
         cerr << "Player 2 fault" << endl;
         cerr << "Player 1 win" << endl;
-        emit endGame(0);
+        emit endGame(1);
     }
     else if(error == QProcess::FailedToStart) {
         cout << "\033[1;32;31mError: cannot start Player 2!\033[m" << endl;
-        emit endGame(0);
+        emit endGame(1);
     }
 }
 
@@ -426,14 +426,14 @@ void Battle::clk()
     }
     if(testInteract && cnt++ >= 10) { /* interaction test failed: timeout */
         cout << "\033[1;32;31mInteract test failed.\033[m" << endl;
-        emit endGame(1);
+        emit endGame(2);
     }
     if(!started) {
         if(p1->cmd.length()) {
             if(p1->reg()) {
                 render->setP1Hand(p1->deck);
                 if(testRegister) {
-                    emit endGame(0);
+                    emit endGame(1);
                 }
             }
             else {
@@ -465,14 +465,14 @@ void Battle::clk()
                 judged = true;
                 cerr << "Player 1 fault" << endl;
                 cerr << "Player 2 win" << endl;
-                emit endGame(1);
+                emit endGame(2);
             }
             if(p2 && !p2->ready) {
                 //cerr << "Card choose fail" << endl;
                 judged = true;
                 cerr << "Player 2 fault" << endl;
                 cerr << "Player 1 win" << endl;
-                emit endGame(0);
+                emit endGame(1);
             }
         }
         return;
@@ -514,7 +514,7 @@ void Battle::clk()
             if(command == 0) {
                 if(testInteract) {
                     cout << "\033[1;32;32mInteract test success.\033[m" << endl;
-                    emit endGame(0);
+                    emit endGame(1);
                 }
                 break;
             }
@@ -523,7 +523,7 @@ void Battle::clk()
                     p1_judge = true;
                     if(testInteract) {
                         cout << "\033[1;32;32mInteract test success.\033[m" << endl;
-                        emit endGame(0);
+                        emit endGame(1);
                     }
                 }
                 compcmd >> trash >> tmp >> x >> y;
@@ -824,36 +824,39 @@ void Battle::gameFinished(int SN)
             }
         }
     }
+
 #ifndef DEBUGTOOL
     render->sendEnd(winner, 3 - cnt2, 3 - cnt1);
-    judge->sendBattleResult(winner);
-    if(winner == 2) {
-        judge->sendResult("You Lost...");
-        emit endGame(1);
-    }
-    else {
-        judge->sendResult("You Win!!!");
-        emit endGame(0);
-    }
-#else
-    if(winner == 2) {
-        emit endGame(1);
-    }
-    else {
-        emit endGame(0);
-    }
 #endif
+
+    emit endGame(winner);
+
 }
 
-void Battle::postSolve(int retval)
+void Battle::postSolve(int winner)
 {
     judged = true;
     synchrogazer->stop();
+
+#ifndef DEBUGTOOL
+    judge->sendBattleResult(winner);
+    if(winner == 2) {
+        judge->sendResult("You Lost...");
+    }
+    else {
+        judge->sendResult("You Win!!!");
+    }
+#endif
 
     p1->kill();
     if(p2) p2->kill();
     p1->waitForFinished(1000);
     if(p2) p2->waitForFinished(1000);
 
-    QCoreApplication::exit(retval);
+    if(winner == 2) {
+        QCoreApplication::exit(1);
+    }
+    else {
+        QCoreApplication::exit(0);
+    }
 }
